@@ -1,0 +1,6 @@
+# db_connection
+db.url=
+db.user=
+db.password=
+db.pool.maximumPoolSize=
+db.connectionTimeout=
