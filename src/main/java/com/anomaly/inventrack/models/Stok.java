@@ -23,6 +23,13 @@ public class Stok implements Serializable {
         this.tanggalUpdate = tanggalUpdate;
     }
 
+    public Stok(Integer idStok, Integer idGudang, Integer idBarang, Integer jumlahStok) {
+        this.idStok = idStok;
+        this.idGudang = idGudang;
+        this.idBarang = idBarang;
+        this.jumlahStok = jumlahStok;
+    }
+
     public Integer getIdStok() { return idStok; }
     public void setIdStok(Integer idStok) { this.idStok = idStok; }
 

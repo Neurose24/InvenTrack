@@ -32,7 +32,7 @@ public class Pengiriman implements Serializable {
         this.tanggalPengiriman = tanggalPengiriman;
         this.noKendaraan = noKendaraan;
         this.statusPengiriman = statusPengiriman;
-        KeteranganPengiriman = keteranganPengiriman;
+        this.KeteranganPengiriman = keteranganPengiriman;
     }
 
     public Integer getIdPengiriman() { return idPengiriman; }
