@@ -14,7 +14,10 @@ public class LogStok implements Serializable {
 
     public enum TipeTransaksi {
         MASUK,
-        KELUAR
+        KELUAR,
+        REKONSILIASI,
+        REKONSILIASI_TAMBAH,
+        REKONSILIASI_KURANG
     }
 
     public LogStok() {

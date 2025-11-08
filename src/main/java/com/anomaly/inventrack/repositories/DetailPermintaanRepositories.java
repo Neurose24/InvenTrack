@@ -37,4 +37,25 @@ public class DetailPermintaanRepositories {
 
         return list;
     }
+
+    public void insert(Connection conn, DetailPermintaan detailPermintaan) throws SQLException {
+        String sql = "INSERT INTO detailPermintaan (idPermintaan, idBarang, jumlahDiminta, jumlahDisetujui, catatanAdmin) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, detailPermintaan.getIdPermintaan());
+            ps.setInt(2, detailPermintaan.getIdBarang());
+            ps.setInt(3, detailPermintaan.getJumlahDiminta());
+            ps.setInt(4, detailPermintaan.getJumlahDisetujui());
+            ps.setString(5, detailPermintaan.getCatatanAdmin());
+
+            ps.executeUpdate();
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    detailPermintaan.setIdDetailPermintaan(generatedKeys.getInt(1));
+                }
+            }
+        }
+    }
 }

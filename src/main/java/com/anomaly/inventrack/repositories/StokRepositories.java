@@ -4,10 +4,16 @@ import com.anomaly.inventrack.models.Stok;
 import com.anomaly.inventrack.utils.Database;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class StokRepositories {
+
+    // ==========================================================
+    // =========== 1. METHOD BIASA (tanpa transaksi) ============
+    // ==========================================================
 
     public List<Stok> getAll() {
         List<Stok> list = new ArrayList<>();
@@ -18,13 +24,7 @@ public class StokRepositories {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Stok stok = new Stok(
-                        rs.getInt("idStok"),
-                        rs.getInt("idGudang"),
-                        rs.getInt("idBarang"),
-                        rs.getInt("jumlahStok")
-                );
-                list.add(stok);
+                list.add(mapResultSetToStok(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -40,12 +40,7 @@ public class StokRepositories {
             ps.setInt(1, idStok);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new Stok(
-                            rs.getInt("idStok"),
-                            rs.getInt("idGudang"),
-                            rs.getInt("idBarang"),
-                            rs.getInt("jumlahStok")
-                    );
+                    return mapResultSetToStok(rs);
                 }
             }
         } catch (SQLException e) {
@@ -54,49 +49,67 @@ public class StokRepositories {
         return null;
     }
 
-    public boolean insert(Stok stok) {
-        String sql = "INSERT INTO stok (idGudang, idBarang, jumlahStok) VALUES (?, ?, ?)";
+    public Stok findByBarangAndGudang(int idBarang, int idGudang) {
+        String sql = "SELECT * FROM stok WHERE idBarang = ? AND idGudang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idBarang);
+            ps.setInt(2, idGudang);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToStok(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void insert(Connection conn, Stok stok) throws SQLException {
+    // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
+    String sql = "INSERT INTO stok (idGudang, idBarang, jumlahStok) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, stok.getIdGudang());
             ps.setInt(2, stok.getIdBarang());
             ps.setInt(3, stok.getJumlahStok());
-            return ps.executeUpdate() > 0;
+            
+            ps.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    stok.setIdStok(generatedKeys.getInt(1));
+                }
+            }
+
+        } // PreparedStatement akan ditutup, Connection tetap terbuka
     }
 
-    public boolean updateJumlahStok(int idStok, int jumlahStokBaru) {
-        String sql = "UPDATE stok SET jumlahStok = ? WHERE idStok = ?";
-        try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    public void updateJumlahStok(Connection conn, int idStok, int jumlahStokBaru) throws SQLException {
+    // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
+    String sql = "UPDATE stok SET jumlahStok = ?, tanggalUpdate = ? WHERE idStok = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, jumlahStokBaru);
-            ps.setInt(2, idStok);
-            return ps.executeUpdate() > 0;
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(3, idStok);
+            
+            ps.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        } // PreparedStatement akan ditutup, Connection tetap terbuka
     }
 
-    public boolean delete(int idStok) {
-        String sql = "DELETE FROM stok WHERE idStok = ?";
-        try (Connection conn = Database.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    public void delete(Connection conn, int idStok) throws SQLException {
+    // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
+    String sql = "DELETE FROM stok WHERE idStok = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, idStok);
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        } // PreparedStatement akan ditutup, Connection tetap terbuka
     }
 
     public List<Stok> getByGudang(int idGudang) {
@@ -109,13 +122,7 @@ public class StokRepositories {
             ps.setInt(1, idGudang);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Stok stok = new Stok(
-                            rs.getInt("idStok"),
-                            rs.getInt("idGudang"),
-                            rs.getInt("idBarang"),
-                            rs.getInt("jumlahStok")
-                    );
-                    list.add(stok);
+                    list.add(mapResultSetToStok(rs));
                 }
             }
 
@@ -123,5 +130,22 @@ public class StokRepositories {
             e.printStackTrace();
         }
         return list;
+    }
+
+    // ==========================================================
+    // ============== 3. HELPER UNTUK MAPPING ==================
+    // ==========================================================
+
+    private Stok mapResultSetToStok(ResultSet rs) throws SQLException {
+        Stok s = new Stok();
+        s.setIdStok(rs.getInt("idStok"));
+        s.setIdGudang(rs.getInt("idGudang"));
+        s.setIdBarang(rs.getInt("idBarang"));
+        s.setJumlahStok(rs.getInt("jumlahStok"));
+        s.setStokMinimum(rs.getInt("stokMinimum"));
+        try {
+            s.setTanggalUpdate(rs.getTimestamp("tanggalUpdate").toLocalDateTime());
+        } catch (Exception ignored) {}
+        return s;
     }
 }
