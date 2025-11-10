@@ -1,0 +1,23 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "InvenTrackApp",
+            "request": "launch",
+            "mainClass": "com.anomaly.inventrack.ui.InvenTrackApp",
+            "projectName": "InvenTrack",
+        },
+        {
+            "type": "java",
+            "name": "Inventrack Remote Debug",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 5005, // Ganti dengan port yang Anda setel di pom.xml
+            "timeout": 30000 // Opsional: Naikkan timeout
+        }
+    ]
+}
