@@ -57,4 +57,46 @@ public class SupirRepositories {
         }
         return Optional.empty();
     }
+
+    public void saveSupir(Supir supir) {
+        String sql = "INSERT INTO supir (namaSupir, noHp, noKendaraan) VALUES (?, ?, ?)";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, supir.getNamaSupir());
+            ps.setString(2, supir.getNoHp());
+            ps.setString(3, supir.getNoKendaraan());
+
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Membuat supir gagal, tidak ada baris yang terpengaruh.");
+            }
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    supir.setIdSupir(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Membuat supir gagal, tidak mendapatkan ID.");
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean deleteSupir(int idSupir) {
+        String sql = "DELETE FROM supir WHERE idSupir = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idSupir);
+            int affectedRows = ps.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -99,4 +99,31 @@ public class PenggunaRepositories {
         }
         return -1; // atau lempar exception sesuai kebutuhan
     }
+
+    public Pengguna saveUser(Pengguna pengguna) {
+        String sql = "INSERT INTO pengguna (namaPengguna, username, passwordHash, idGudang) VALUES (?, ?, ?, ?)";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setString(1, pengguna.getNamaPengguna());
+            ps.setString(2, pengguna.getUsername());
+            ps.setString(3, pengguna.getPasswordHash());
+            ps.setInt(4, pengguna.getIdGudang());
+            
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Gagal menyimpan pengguna, tidak ada baris yang terpengaruh.");
+            }
+
+            try (ResultSet gk = ps.getGeneratedKeys()) {
+                if (gk.next()) {
+                    pengguna.setIdPengguna(gk.getInt(1));
+                }
+            }
+            return pengguna;
+        } catch (SQLException e) {
+            // Lempar RuntimeException agar service tahu
+            throw new RuntimeException("Gagal menyimpan pengguna baru: " + e.getMessage(), e);
+        }
+    }
 }

@@ -1,4 +1,3 @@
-D:\InvenTrack\src\main\java\com\anomaly\App.java
 D:\InvenTrack\src\main\java\com\anomaly\inventrack\controllers\InventrackController.java
 D:\InvenTrack\src\main\java\com\anomaly\inventrack\models\Barang.java
 D:\InvenTrack\src\main\java\com\anomaly\inventrack\models\DetailPengiriman.java
@@ -32,6 +31,3 @@ D:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\InvenTrackApp.java
 D:\InvenTrack\src\main\java\com\anomaly\inventrack\utils\Config.java
 D:\InvenTrack\src\main\java\com\anomaly\inventrack\utils\Database.java
 D:\InvenTrack\src\main\java\com\anomaly\inventrack\utils\DBUtil.java
-D:\InvenTrack\src\main\java\com\anomaly\PrimaryController.java
-D:\InvenTrack\src\main\java\com\anomaly\SecondaryController.java
-D:\InvenTrack\src\main\java\module-info.java
