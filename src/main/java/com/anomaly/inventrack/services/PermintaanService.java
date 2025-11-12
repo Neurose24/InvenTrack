@@ -4,6 +4,7 @@ import com.anomaly.inventrack.models.*;
 import com.anomaly.inventrack.repositories.*;
 import com.anomaly.inventrack.utils.Database;
 import com.anomaly.inventrack.services.exceptions.BusinessException; 
+import com.anomaly.inventrack.services.exceptions.NotFoundException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -108,24 +109,18 @@ public class PermintaanService {
 
             // 1. Ambil data Permintaan dan Detail
             // Asumsi findById di PermintaanRepositories sudah mengembalikan Optional
-            Optional<Permintaan> optPermintaan = Optional.ofNullable(permintaanRepo.findById(idPermintaan)); 
-            if (optPermintaan.isEmpty()) {
-                throw new RuntimeException("Permintaan tidak ditemukan.");
-            }
-            Permintaan permintaan = optPermintaan.get();
+            Permintaan permintaan = permintaanRepo.findById(idPermintaan)
+                .orElseThrow(() -> new NotFoundException("Permintaan dengan ID " + idPermintaan + " tidak ditemukan."));
 
             // 2. Cek Status (Aturan Bisnis)
             if (permintaan.getStatusPermintaan() != Permintaan.StatusPermintaan.MENUNGGU) {
                 throw new RuntimeException("Permintaan sudah diproses (Status: " + permintaan.getStatusPermintaan() + ").");
             }
 
-            // 3. Tentukan Gudang Peminta/Asal
-            Optional<Pengguna> optPeminta = penggunaRepo.findById(permintaan.getIdPenggunaPeminta()); //
-            if (optPeminta.isEmpty()) {
-                throw new RuntimeException("Pengguna peminta tidak ditemukan.");
-            }
-            int idGudangAsal = optPeminta.get().getIdGudang(); // Gudang yang stoknya akan berkurang
-
+            Pengguna peminta = penggunaRepo.findById(permintaan.getIdPenggunaPeminta())
+                .orElseThrow(() -> new NotFoundException("Pengguna peminta dengan ID " + permintaan.getIdPenggunaPeminta() + " tidak ditemukan."));
+            
+            int idGudangAsal = peminta.getIdGudang();
             List<DetailPermintaan> detailList = detailPermintaanRepo.findByPermintaan(idPermintaan); //
 
             // 4. Proses Pengurangan Stok (Delegasi ke InventoryService)

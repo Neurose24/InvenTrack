@@ -6,11 +6,14 @@ import com.anomaly.inventrack.repositories.LogStokRepositories;
 import com.anomaly.inventrack.repositories.StokRepositories;
 import com.anomaly.inventrack.services.exceptions.BusinessException; 
 import com.anomaly.inventrack.utils.Database;
+import com.anomaly.inventrack.services.exceptions.NotFoundException;
+import com.anomaly.inventrack.models.LogStokDetail;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public class InventoryService {
 
@@ -28,12 +31,9 @@ public class InventoryService {
     }
 
     // ✅ Ambil stok berdasarkan barang & gudang
-    public Stok getStok(int idBarang, int idGudang) {
-        Stok stok = stokRepo.findByBarangAndGudang(idBarang, idGudang); //
-        if (stok == null) {
-            throw new BusinessException("Stok tidak ditemukan untuk barang ID " + idBarang + " di gudang ID " + idGudang);
-        }
-        return stok;
+   public Stok getStok(int idBarang, int idGudang) {
+        return stokRepo.findByBarangAndGudang(idBarang, idGudang)
+            .orElseThrow(() -> new NotFoundException("Stok tidak ditemukan untuk barang ID " + idBarang + " di gudang ID " + idGudang));
     }
 
     // =========================================================
@@ -49,16 +49,15 @@ public class InventoryService {
             conn = Database.getConnection();
             conn.setAutoCommit(false); // Mulai transaksi
             
-            Stok stok = stokRepo.findByBarangAndGudang(idBarang, idGudang); //
+            Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudang);
             
-            if (stok == null) {
-                // Insert stok baru jika belum ada
-                Stok newStok = new Stok(null, idGudang, idBarang, jumlah); //
-                stokRepo.insert(conn, newStok); // Transaksional
+            if (optStok.isEmpty()) {
+                Stok newStok = new Stok(null, idGudang, idBarang, jumlah);
+                stokRepo.insert(conn, newStok);
             } else {
-                // Update stok jika sudah ada
-                int jumlahBaru = stok.getJumlahStok() + jumlah; //
-                stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru); // Transaksional
+                Stok stok = optStok.get();
+                int jumlahBaru = stok.getJumlahStok() + jumlah;
+                stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru);
             }
 
             // Catat Log Stok
@@ -107,9 +106,10 @@ public class InventoryService {
             conn = Database.getConnection();
             conn.setAutoCommit(false); // Mulai transaksi
             
-            Stok stok = stokRepo.findByBarangAndGudang(idBarang, idGudang); //
+            Stok stok = stokRepo.findByBarangAndGudang(idBarang, idGudang)
+                .orElseThrow(() -> new BusinessException("Stok tidak mencukupi (barang tidak ditemukan)"));
             
-            if (stok == null || stok.getJumlahStok() < jumlah) { //
+            if (stok.getJumlahStok() < jumlah) {
                 throw new BusinessException("Stok tidak mencukupi untuk dikurangi");
             }
 
@@ -163,19 +163,20 @@ public class InventoryService {
             conn = Database.getConnection();
             conn.setAutoCommit(false); // Mulai transaksi
             
-            Stok stok = stokRepo.findByBarangAndGudang(idBarang, idGudang); //
+            // PERBAIKAN: Tangani Optional<Stok> yang dikembalikan oleh repositori
+            Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudang);
             
-            if (stok == null) {
+            if (optStok.isEmpty()) { // <-- PERBAIKAN: Gunakan .isEmpty()
                 // Jika belum ada stok, buat baru
-                Stok newStok = new Stok(null, idGudang, idBarang, jumlahFisik); //
-                stokRepo.insert(conn, newStok); // Transaksional
+                Stok newStok = new Stok(null, idGudang, idBarang, jumlahFisik);
+                stokRepo.insert(conn, newStok);
                 
                 // Catat log
                 LogStok log = new LogStok(
                         null,
                         idGudang,
                         idBarang,
-                        LogStok.TipeTransaksi.REKONSILIASI, //
+                        LogStok.TipeTransaksi.REKONSILIASI,
                         jumlahFisik,
                         LocalDateTime.now(),
                         keterangan + " (stok baru dibuat)"
@@ -185,19 +186,22 @@ public class InventoryService {
                 return;
             }
 
-            int selisih = jumlahFisik - stok.getJumlahStok(); //
+            // Jika stok ada, ambil objeknya dari Optional
+            Stok stok = optStok.get(); // <-- PERBAIKAN: Ambil objek Stok
+
+            int selisih = jumlahFisik - stok.getJumlahStok(); // <-- Sekarang ini valid
             if (selisih == 0) {
                 conn.commit(); // Tetap commit jika tidak ada operasi yang dilakukan
                 return;
             }
 
             // Update stok
-            stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahFisik); // Transaksional
+            stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahFisik); // <-- Sekarang ini valid
 
             // Catat Log Stok
             LogStok.TipeTransaksi tipe = (selisih > 0)
-                    ? LogStok.TipeTransaksi.REKONSILIASI_TAMBAH //
-                    : LogStok.TipeTransaksi.REKONSILIASI_KURANG; //
+                    ? LogStok.TipeTransaksi.REKONSILIASI_TAMBAH
+                    : LogStok.TipeTransaksi.REKONSILIASI_KURANG;
 
             LogStok log = new LogStok(
                     null,
@@ -234,5 +238,17 @@ public class InventoryService {
     // ✅ Lihat semua log stok
     public List<LogStok> getAllLog() {
         return logRepo.findAll(); //
+    }
+
+    // =========================================================
+    // =============== FUNGSI LAPORAN (BARU) ===================
+    // =========================================================
+    
+    /**
+     * Mendapatkan laporan detail log stok (dengan join nama barang/gudang).
+     */
+    public List<LogStokDetail> getLogStokDetails() {
+        // Mendelegasikan panggilan ke repositori
+        return logRepo.findDetailAll();
     }
 }

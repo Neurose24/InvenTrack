@@ -3,6 +3,7 @@ package com.anomaly.inventrack.services;
 import com.anomaly.inventrack.models.*;
 import com.anomaly.inventrack.repositories.*;
 import com.anomaly.inventrack.utils.Database;
+import com.anomaly.inventrack.services.exceptions.BusinessException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,8 +18,6 @@ public class PengirimanService {
     private final DetailPengirimanRepositories detailPengirimanRepo;
     private final PermintaanRepositories permintaanRepo;
     private final PenggunaRepositories penggunaRepo;
-    
-    // INTEGRASI: Service untuk manipulasi stok
     private final InventoryService inventoryService; 
 
     public PengirimanService() {
@@ -45,32 +44,28 @@ public class PengirimanService {
         Connection conn = null;
         try {
             conn = Database.getConnection();
-            conn.setAutoCommit(false); // Mulai transaksi untuk Pengiriman/Permintaan/DetailPengiriman
+            conn.setAutoCommit(false); 
 
             // 1. Validasi Pengiriman
-            // Asumsi findById di PengirimanRepositories mengembalikan Optional
-            Optional<Pengiriman> optPengiriman = pengirimanRepo.findById(idPengiriman); 
-            if (optPengiriman.isEmpty() || optPengiriman.get().getStatusPengiriman() != Pengiriman.StatusPengiriman.DIKIRIM) {
-                throw new RuntimeException("Pengiriman tidak valid atau belum dikirim.");
-            }
-            Pengiriman pengiriman = optPengiriman.get();
+            Pengiriman pengiriman = pengirimanRepo.findById(idPengiriman)
+                .orElseThrow(() -> new RuntimeException("Pengiriman tidak valid atau belum dikirim."));
             
-            // 2. Tentukan Gudang Tujuan (tempat stok akan bertambah)
-            Optional<Pengguna> optPenerima = penggunaRepo.findById(pengiriman.getIdPenggunaPenerima()); 
-            if (optPenerima.isEmpty()) {
-                throw new RuntimeException("Pengguna penerima tidak ditemukan.");
+            if (pengiriman.getStatusPengiriman() != Pengiriman.StatusPengiriman.DIKIRIM) {
+                throw new RuntimeException("Pengiriman sudah diproses (Status: " + pengiriman.getStatusPengiriman() + ").");
             }
-            int idGudangTujuan = optPenerima.get().getIdGudang(); //
+            
+            // 2. Tentukan Gudang Tujuan
+            Pengguna optPenerima = penggunaRepo.findById(pengiriman.getIdPenggunaPenerima())
+                .orElseThrow(() -> new RuntimeException("Pengguna penerima tidak ditemukan."));
+            
+            int idGudangTujuan = optPenerima.getIdGudang();
 
-            boolean isSemuaDiterima = true;
+            boolean isSemuaDiterima = true; // Tetap simpan ini untuk referensi di masa depan
 
             // 3. Proses Stok dan Update Detail Penerimaan
             for (DetailPengiriman detail : detailPenerimaanList) {
                 
-                // A. Update Detail Pengiriman
-                // Memerlukan method updatePenerimaan transaksional di DetailPengirimanRepositories
-                // Catatan: DetailPengirimanRepositories harus menerima Connection
-                detailPengirimanRepo.updatePenerimaan( 
+                detailPengirimanRepo.updatePenerimaan(
                     conn, 
                     detail.getIdDetailPengiriman(), 
                     detail.getJumlahDiterima(), 
@@ -78,25 +73,15 @@ public class PengirimanService {
                     detail.getCatatanPenerimaan()
                 ); 
 
-                // Cek status total
                 if (detail.getStatusPenerimaan() != DetailPengiriman.StatusPenerimaan.DITERIMA) {
                     isSemuaDiterima = false;
                 }
                 
-                // B. Tambah Stok di Gudang Tujuan (Delegasi ke InventoryService)
                 if (detail.getJumlahDiterima() > 0) {
-                    int idBarang = detail.getIdBarang();
-                    int jumlahMasuk = detail.getJumlahDiterima();
-
-                    // Panggil Service lain untuk menambah stok
-                    // InventoryService akan mengurus: 
-                    // a) Cek stok, insert baru jika belum ada
-                    // b) Update tabel stok (transaksional)
-                    // c) Insert log stok (transaksional)
                     inventoryService.tambahStok(
-                        idBarang, 
+                        detail.getIdBarang(), 
                         idGudangTujuan, 
-                        jumlahMasuk, 
+                        detail.getJumlahDiterima(), 
                         "Masuk dari Pengiriman ID: " + idPengiriman
                     );
                 }
@@ -104,21 +89,22 @@ public class PengirimanService {
 
             // 4. Update Status Pengiriman Induk
             pengirimanRepo.updateStatus(conn, idPengiriman, Pengiriman.StatusPengiriman.DITERIMA);
+
+            // (Catatan: Jika nanti Anda ingin status DITERIMA_SEBAGIAN, 
+            // Anda harus mengubah model Pengiriman.java dan mengembalikan logika if-else)
             
             // 5. Update Status Permintaan
-            // Setelah Pengiriman DITERIMA, Permintaan disetel ke SELESAI
-            permintaanRepo.updateStatus(conn, pengiriman.getIdPermintaan(), Permintaan.StatusPermintaan.SELESAI); //
+            permintaanRepo.updateStatus(conn, pengiriman.getIdPermintaan(), Permintaan.StatusPermintaan.SELESAI);
 
-            conn.commit(); // Komit transaksi PengirimanService
+            conn.commit();
             
         } catch (SQLException e) {
             try {
-                if (conn != null) conn.rollback(); // Rollback PengirimanService
+                if (conn != null) conn.rollback(); 
             } catch (SQLException rollbackEx) {
                 System.err.println("Rollback gagal: " + rollbackEx.getMessage());
             }
-            // Lempar kembali sebagai BusinessException/RuntimeException
-            throw new RuntimeException("Gagal mencatat penerimaan. Transaksi dibatalkan.", e);
+            throw new BusinessException("Gagal mencatat penerimaan. Transaksi dibatalkan.", e);
         } finally {
             try {
                 if (conn != null) {

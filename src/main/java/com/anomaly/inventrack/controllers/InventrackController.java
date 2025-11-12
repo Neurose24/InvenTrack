@@ -1,10 +1,8 @@
 package com.anomaly.inventrack.controllers;
 
 import com.anomaly.inventrack.models.*;
-import com.anomaly.inventrack.models.LogStokDetail; // Digunakan untuk laporan log detail
 import com.anomaly.inventrack.services.*;
 import com.anomaly.inventrack.services.exceptions.BusinessException; // Exception yang tersedia
-import com.anomaly.inventrack.repositories.LogStokRepositories;
 import com.anomaly.inventrack.repositories.PenggunaRepositories;
 
 import java.util.List;
@@ -20,9 +18,6 @@ public class InventrackController {
     private final PermintaanService permintaanService;
     private final PengirimanService pengirimanService;
     private final InventoryService inventoryService;
-    
-    // Repositori yang digunakan langsung untuk Laporan (karena LaporanService tidak ada)
-    private final LogStokRepositories logRepo;
     private final PenggunaRepositories penggunaRepo;
 
     public InventrackController() {
@@ -30,8 +25,6 @@ public class InventrackController {
         this.permintaanService = new PermintaanService();
         this.pengirimanService = new PengirimanService();
         this.inventoryService = new InventoryService();
-        
-        this.logRepo = new LogStokRepositories();
         this.penggunaRepo = new PenggunaRepositories();
     }
 
@@ -97,16 +90,15 @@ public class InventrackController {
     }
     
     // =========================================================
-    // =============== FUNGSI LAPORAN (FINAL) ===================
+    // =============== FUNGSI LAPORAN (DIPERBAIKI) =============
     // =========================================================
     
     /**
      * Endpoint: Mendapatkan Laporan Stok per Gudang (Data mentah).
-     * @return List<Stok> yang ada di semua gudang.
      */
     public List<Stok> getLaporanStok() {
         try {
-            // Memanggil InventoryService yang sudah ada
+            // Panggilan ini sudah benar
             return inventoryService.getAllStok();
         } catch (BusinessException e) {
             System.err.println("ERROR BISNIS LAPORAN STOK: " + e.getMessage());
@@ -116,12 +108,11 @@ public class InventrackController {
     
     /**
      * Endpoint: Mendapatkan Laporan Log Stok Detail (Perlu LogStokDetail.java dan findDetailAll()).
-     * @return List<LogStokDetail> dengan nama barang dan gudang.
      */
     public List<LogStokDetail> getLaporanLogStokDetail() {
         try {
-            // Memanggil langsung repository untuk laporan yang kompleks (praktik yang diizinkan tanpa LaporanService)
-            return logRepo.findDetailAll();
+            // PERBAIKAN: Memanggil service, bukan repository
+            return inventoryService.getLogStokDetails(); 
         } catch (RuntimeException e) {
             System.err.println("ERROR DATABASE: Gagal memuat log stok detail. " + e.getMessage());
             return List.of(); 

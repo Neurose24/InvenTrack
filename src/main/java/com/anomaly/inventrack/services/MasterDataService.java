@@ -2,8 +2,8 @@ package com.anomaly.inventrack.services;
 
 import com.anomaly.inventrack.models.*;
 import com.anomaly.inventrack.repositories.*;
-import com.anomaly.inventrack.services.exceptions.BusinessException; // Menggunakan exception Anda
-import com.anomaly.inventrack.services.exceptions.NotFoundException; // Menggunakan exception Anda
+import com.anomaly.inventrack.services.exceptions.BusinessException;
+import com.anomaly.inventrack.services.exceptions.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,10 +55,8 @@ public class MasterDataService {
             throw new IllegalArgumentException("Nama Gudang wajib diisi.");
         }
         
-        // PERBAIKAN: Asumsi Anda membuat metode 'save' di GudangRepositories
-        // gudangRepo.save(gudang); 
-        
-        // (CATATAN: Anda harus membuat metode 'save' di GudangRepositories)
+        // PERBAIKAN: Hapus komentar
+        gudangRepo.save(gudang); 
         
         return gudang;
     }
@@ -74,19 +72,15 @@ public class MasterDataService {
         // Cek keberadaan data sebelum update
         getGudangById(gudang.getIdGudang()); 
 
-        // PERBAIKAN: Asumsi Anda membuat metode 'update' di GudangRepositories
-        // gudangRepo.update(gudang); 
+        // PERBAIKAN: Hapus komentar
+        gudangRepo.update(gudang); 
 
         return gudang;
     }
 
     public Gudang getGudangById(int idGudang) {
-        // PERBAIKAN: Menyesuaikan dengan fakta bahwa GudangRepo.findById mengembalikan null
-        Gudang g = gudangRepo.findById(idGudang);
-        if (g == null) {
-            throw new NotFoundException("Gudang dengan ID " + idGudang + " tidak ditemukan.");
-        }
-        return g;
+         return gudangRepo.findById(idGudang)
+                .orElseThrow(() -> new NotFoundException("Gudang dengan ID " + idGudang + " tidak ditemukan."));
     }
     
     // =========================================================
@@ -97,9 +91,9 @@ public class MasterDataService {
         if (supir.getNamaSupir() == null || supir.getNamaSupir().trim().isEmpty()) {
             throw new IllegalArgumentException("Nama Supir wajib diisi.");
         }
-        
-        // PERBAIKAN: Asumsi Anda membuat metode 'save' di SupirRepositories
-        // supirRepo.save(supir); 
+
+
+        supirRepo.saveSupir(supir); 
 
         return supir;
     }
@@ -109,9 +103,7 @@ public class MasterDataService {
     }
 
     public boolean deleteSupir(int idSupir) {
-        // PERBAIKAN: Asumsi Anda membuat metode 'delete' di SupirRepositories
-        // return supirRepo.delete(idSupir); 
-        
+        supirRepo.deleteSupir(idSupir);
         return true; // Placeholder
     }
     

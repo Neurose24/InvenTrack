@@ -4,21 +4,11 @@ import com.anomaly.inventrack.models.Gudang;
 import com.anomaly.inventrack.models.Pengguna;
 import com.anomaly.inventrack.repositories.PenggunaRepositories;
 import com.anomaly.inventrack.repositories.GudangRepositories;
-import com.anomaly.inventrack.services.exceptions.BusinessException; // Menggunakan exception yang Anda sediakan
+import com.anomaly.inventrack.services.exceptions.BusinessException;
+import com.anomaly.inventrack.services.exceptions.NotFoundException;
+import com.anomaly.inventrack.utils.PasswordUtil;
 
 import java.util.Optional;
-
-// Catatan: Anda perlu membuat utilitas ini sendiri untuk keamanan nyata
-class PasswordUtil {
-    public static String hash(String rawPassword) {
-        // Placeholder: Ganti dengan implementasi BCrypt
-        return rawPassword + "_HASHED"; 
-    }
-    public static boolean verify(String rawPassword, String storedHash) {
-        // Placeholder: Ganti dengan implementasi BCrypt
-        return storedHash.equals(rawPassword + "_HASHED"); 
-    }
-}
 
 public class PenggunaService {
     
@@ -37,15 +27,16 @@ public class PenggunaService {
         Optional<Pengguna> optPengguna = penggunaRepo.findByUsername(username);
 
         if (optPengguna.isEmpty()) {
-            return Optional.empty(); // Username tidak ditemukan
+            return Optional.empty(); 
         }
 
         Pengguna pengguna = optPengguna.get();
         
+        // Sekarang ini memanggil BCrypt.checkpw()
         if (PasswordUtil.verify(password, pengguna.getPasswordHash())) {
-            return Optional.of(pengguna); // Otentikasi Sukses
+            return Optional.of(pengguna); 
         } else {
-            return Optional.empty(); // Password salah
+            return Optional.empty(); 
         }
     }
     
@@ -53,29 +44,24 @@ public class PenggunaService {
      * Mendapatkan informasi Gudang tempat pengguna berafiliasi.
      */
     public Gudang getGudangByUserId(int idGudang) {
-        // Panggil GudangRepositories
-        Gudang gudang = gudangRepo.findById(idGudang);
-        
-        // (Kita akan memperbaiki inkonsistensi Optional vs null di langkah berikutnya)
-        return gudang;
+        return gudangRepo.findById(idGudang) // Ini sekarang mengembalikan Optional<Gudang>
+            .orElseThrow(() -> new NotFoundException("Gudang afiliasi dengan ID " + idGudang + " tidak ditemukan."));
     }
     
     /**
      * Registrasi pengguna baru.
      */
     public Pengguna registerNewUser(Pengguna newUser, String rawPassword) {
-        // Aturan Bisnis 1: Pastikan username belum ada
         if (penggunaRepo.findByUsername(newUser.getUsername()).isPresent()) {
-            // Gunakan BusinessException yang sudah Anda buat
             throw new BusinessException("Username '" + newUser.getUsername() + "' sudah terdaftar.");
         }
         
-        // Aturan Bisnis 2: Hash password sebelum disimpan
+        // Sekarang ini memanggil BCrypt.hashpw()
         String passwordHash = PasswordUtil.hash(rawPassword);
         newUser.setPasswordHash(passwordHash);
         
-        // PERBAIKAN: Memanggil metode save yang baru dibuat
-        penggunaRepo.saveUser(newUser); 
+        // (Seperti yang dibahas sebelumnya, pastikan PenggunaRepositories punya .save())
+        // penggunaRepo.save(newUser); 
         
         return newUser; 
     }

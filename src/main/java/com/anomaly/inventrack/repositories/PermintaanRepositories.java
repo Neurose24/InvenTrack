@@ -7,6 +7,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class PermintaanRepositories {
 
@@ -36,7 +37,7 @@ public class PermintaanRepositories {
         return list;
     }
 
-    public Permintaan findById(int idPermintaan) {
+    public Optional<Permintaan> findById(int idPermintaan) {
         String sql = "SELECT * FROM permintaan WHERE idPermintaan = ?";
 
         try (Connection conn = Database.getConnection();
@@ -45,20 +46,20 @@ public class PermintaanRepositories {
             ps.setInt(1, idPermintaan);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new Permintaan(
+                    return Optional.of(new Permintaan(
                             rs.getInt("idPermintaan"),
                             rs.getInt("idPenggunaPeminta"),
                             rs.getTimestamp("tanggalPermintaan").toLocalDateTime(),
                             rs.getObject("statusPermintaan", Permintaan.StatusPermintaan.class),
                             rs.getString("catatanPermintaan")
-                    );
+                    ));
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Gagal mencari permintaan by ID: " + e.getMessage(), e);
         }
-        return null;
+        return Optional.empty();
     }
 
     public void insert(Connection conn, Permintaan permintaan) throws SQLException {

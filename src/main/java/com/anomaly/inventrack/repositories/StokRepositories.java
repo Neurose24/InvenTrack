@@ -32,7 +32,7 @@ public class StokRepositories {
         return list;
     }
 
-    public Stok getById(int idStok) {
+    public Optional<Stok> getById(int idStok) {
         String sql = "SELECT * FROM stok WHERE idStok = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -40,16 +40,16 @@ public class StokRepositories {
             ps.setInt(1, idStok);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToStok(rs);
+                    return Optional.of(mapResultSetToStok(rs));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Gagal mencari stok by ID: " + e.getMessage(), e);
         }
-        return null;
+        return Optional.empty();
     }
 
-    public Stok findByBarangAndGudang(int idBarang, int idGudang) {
+    public Optional<Stok> findByBarangAndGudang(int idBarang, int idGudang) {
         String sql = "SELECT * FROM stok WHERE idBarang = ? AND idGudang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,17 +58,16 @@ public class StokRepositories {
             ps.setInt(2, idGudang);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToStok(rs);
+                    return Optional.of(mapResultSetToStok(rs));
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Gagal mencari stok by Barang/Gudang: " + e.getMessage(), e);
         }
-        return null;
+        return Optional.empty();
     }
 
     public void insert(Connection conn, Stok stok) throws SQLException {
-    // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
     String sql = "INSERT INTO stok (idGudang, idBarang, jumlahStok) VALUES (?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -83,7 +82,6 @@ public class StokRepositories {
                     stok.setIdStok(generatedKeys.getInt(1));
                 }
             }
-
         } // PreparedStatement akan ditutup, Connection tetap terbuka
     }
 
