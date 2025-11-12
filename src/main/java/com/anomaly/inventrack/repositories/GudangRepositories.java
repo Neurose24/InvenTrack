@@ -21,10 +21,10 @@ public class GudangRepositories {
 
             while (rs.next()) {
                 Gudang g = new Gudang(
-                        rs.getInt("idGudang"),
-                        rs.getString("namaGudang"),
+                        rs.getInt("id_gudang"),
+                        rs.getString("nama_gudang"),
                         rs.getString("lokasi"),
-                        rs.getString("keterangan")
+                        rs.getString("kontak_admin")
                 );
                 list.add(g);
             }
@@ -37,7 +37,7 @@ public class GudangRepositories {
     }
 
     public Optional<Gudang> findById(int id) {
-        String sql = "SELECT * FROM gudang WHERE idGudang = ?";
+        String sql = "SELECT * FROM gudang WHERE id_gudang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -47,10 +47,10 @@ public class GudangRepositories {
                 if (rs.next()) {
                     // Bungkus hasil dengan Optional.of()
                     return Optional.of(new Gudang(
-                            rs.getInt("idGudang"),
-                            rs.getString("namaGudang"),
+                            rs.getInt("id_gudang"),
+                            rs.getString("nama_gudang"),
                             rs.getString("lokasi"),
-                            rs.getString("keterangan") //
+                            rs.getString("kontak_admin") //
                     ));
                 }
             }
@@ -62,7 +62,7 @@ public class GudangRepositories {
     }
 
     public Gudang save(Gudang gudang) {
-        String sql = "INSERT INTO gudang (namaGudang, lokasi, keterangan) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO gudang (nama_gudang, lokasi, kontak_admin) VALUES (?, ?, ?)";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -87,7 +87,7 @@ public class GudangRepositories {
     }
 
     public boolean update(Gudang gudang) {
-        String sql = "UPDATE gudang SET namaGudang = ?, lokasi = ?, keterangan = ? WHERE idGudang = ?";
+        String sql = "UPDATE gudang SET nama_gudang = ?, lokasi = ?, kontak_admin = ? WHERE id_gudang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
@@ -103,7 +103,7 @@ public class GudangRepositories {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM gudang WHERE idGudang = ?";
+        String sql = "DELETE FROM gudang WHERE id_gudang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);

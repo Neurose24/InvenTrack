@@ -60,8 +60,7 @@ public class PenggunaService {
         String passwordHash = PasswordUtil.hash(rawPassword);
         newUser.setPasswordHash(passwordHash);
         
-        // (Seperti yang dibahas sebelumnya, pastikan PenggunaRepositories punya .save())
-        // penggunaRepo.save(newUser); 
+        penggunaRepo.saveUser(newUser); 
         
         return newUser; 
     }

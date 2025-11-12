@@ -22,15 +22,15 @@ public class PengirimanRepositories {
 
             while (rs.next()) {
                 Pengiriman p = new Pengiriman(
-                        rs.getInt("idPengiriman"),
-                        rs.getInt("idPermintaan"),
-                        rs.getInt("idPenggunaPengirim"),
-                        rs.getInt("idPenggunaPenerima"),
-                        rs.getInt("idSupir"),
-                        rs.getTimestamp("tanggalPengiriman").toLocalDateTime(),
-                        rs.getString("noKendaraan"),
-                        rs.getObject("statusPengiriman", Pengiriman.StatusPengiriman.class),
-                        rs.getString("keteranganPengiriman")
+                        rs.getInt("id_pengiriman"),
+                        rs.getInt("id_permintaan"),
+                        rs.getInt("id_pengguna_pengirim"),
+                        rs.getInt("id_pengguna_penerima"),
+                        rs.getInt("id_supir"),
+                        rs.getTimestamp("tanggal_pengiriman").toLocalDateTime(),
+                        rs.getString("no_kendaraan"),
+                        rs.getObject("status_pengriman", Pengiriman.StatusPengiriman.class),
+                        rs.getString("keterangan_pengriman")
                 );
                 list.add(p);
             }
@@ -41,24 +41,24 @@ public class PengirimanRepositories {
         return list;
     }
 
-    public Optional<Pengiriman> findById(int idPengiriman) {
-        String sql = "SELECT * FROM pengiriman WHERE idPengiriman = ?";
+    public Optional<Pengiriman> findById(int id_pengiriman) {
+        String sql = "SELECT * FROM pengiriman WHERE id_pengiriman = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idPengiriman);
+            ps.setInt(1, id_pengiriman);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(new Pengiriman(
-                        rs.getInt("idPengiriman"),
-                        rs.getInt("idPermintaan"),
-                        rs.getInt("idPenggunaPengirim"),
-                        rs.getInt("idPenggunaPenerima"),
-                        rs.getInt("idSupir"),
-                        rs.getTimestamp("tanggalPengiriman").toLocalDateTime(),
-                        rs.getString("noKendaraan"),
-                        rs.getObject("statusPengiriman", Pengiriman.StatusPengiriman.class),
-                        rs.getString("keteranganPengiriman")
+                        rs.getInt("id_pengiriman"),
+                        rs.getInt("id_permintaan"),
+                        rs.getInt("id_pengguna_pengirim"),
+                        rs.getInt("id_pengguna_penerima"),
+                        rs.getInt("id_supir"),
+                        rs.getTimestamp("tanggal_pengiriman").toLocalDateTime(),
+                        rs.getString("no_kendaraan"),
+                        rs.getObject("status_pengriman", Pengiriman.StatusPengiriman.class),
+                        rs.getString("keterangan_pengriman")
                     ));
                 }
             }
@@ -69,8 +69,8 @@ public class PengirimanRepositories {
     }
 
     public void insert(Connection conn, Pengiriman pengiriman) throws SQLException {
-        String sql = "INSERT INTO pengiriman (idPermintaan, idPenggunaPengirim, idPenggunaPenerima, idSupir, " +
-                     "tanggalPengiriman, noKendaraan, statusPengiriman, keteranganPengiriman) " +
+        String sql = "INSERT INTO pengiriman (id_permintaan, id_pengguna_pengirim, id_pengguna_penerima, id_supir, " +
+                     "tanggal_pengiriman, no_kendaraan, status_pengriman, keterangan_pengriman) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setObject(1, pengiriman.getIdPermintaan()); 
@@ -90,11 +90,11 @@ public class PengirimanRepositories {
         }
     }
 
-    public void updateStatus(Connection conn, int idPengiriman, Pengiriman.StatusPengiriman status) throws SQLException {
-    String sql = "UPDATE pengiriman SET statusPengiriman = ? WHERE idPengiriman = ?";
+    public void updateStatus(Connection conn, int id_pengiriman, Pengiriman.StatusPengiriman status) throws SQLException {
+    String sql = "UPDATE pengiriman SET status_pengriman = ? WHERE id_pengiriman = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setObject(1, status.toString());
-            ps.setInt(2, idPengiriman);
+            ps.setInt(2, id_pengiriman);
             ps.executeUpdate();
         }
     }

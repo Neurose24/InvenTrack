@@ -9,24 +9,24 @@ import java.util.List;
 
 public class DetailPermintaanRepositories {
 
-    public List<DetailPermintaan> findByPermintaan(int idPermintaan) {
+    public List<DetailPermintaan> findByPermintaan(int id_permintaan) {
         List<DetailPermintaan> list = new ArrayList<>();
-        String sql = "SELECT * FROM detailPermintaan WHERE idPermintaan = ?";
+        String sql = "SELECT * FROM detail_permintaan WHERE id_permintaan = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idPermintaan);
+            ps.setInt(1, id_permintaan);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 DetailPermintaan dp = new DetailPermintaan(
-                        rs.getInt("idDetailPermintaan"),
-                        rs.getInt("idPermintaan"),
-                        rs.getInt("idBarang"),
-                        rs.getInt("jumlahDiminta"),
-                        rs.getInt("jumlahDisetujui"),
-                        rs.getString("catatanAdmin")
+                        rs.getInt("id_detail_permintaan"),
+                        rs.getInt("id_permintaan"),
+                        rs.getInt("id_barang"),
+                        rs.getInt("jumlah_diminta"),
+                        rs.getInt("jumlah_disetujui"),
+                        rs.getString("catatan_admin")
                 );
                 list.add(dp);
             }
@@ -39,7 +39,7 @@ public class DetailPermintaanRepositories {
     }
 
     public void insert(Connection conn, DetailPermintaan detailPermintaan) throws SQLException {
-        String sql = "INSERT INTO detailPermintaan (idPermintaan, idBarang, jumlahDiminta, jumlahDisetujui, catatanAdmin) " +
+        String sql = "INSERT INTO detail_permintaan (id_permintaan, id_barang, jumlah_diminta, jumlah_disetujui, catatan_admin) " +
                      "VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {

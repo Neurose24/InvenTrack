@@ -2,22 +2,21 @@ package com.anomaly.inventrack.controllers;
 
 import com.anomaly.inventrack.models.*;
 import com.anomaly.inventrack.services.*;
-import com.anomaly.inventrack.services.exceptions.BusinessException; // Exception yang tersedia
+import com.anomaly.inventrack.services.exceptions.BusinessException;
+import com.anomaly.inventrack.repositories.LogStokRepositories;
 import com.anomaly.inventrack.repositories.PenggunaRepositories;
 
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Controller Layer: Menerima permintaan dari UI/API dan mendelegasikannya ke Service Layer.
- */
 public class InventrackController {
 
-    // Inisialisasi Service yang tersedia
     private final PenggunaService penggunaService; 
     private final PermintaanService permintaanService;
     private final PengirimanService pengirimanService;
     private final InventoryService inventoryService;
+    private final MasterDataService masterDataService;
+    private final LogStokRepositories logRepo;
     private final PenggunaRepositories penggunaRepo;
 
     public InventrackController() {
@@ -25,6 +24,8 @@ public class InventrackController {
         this.permintaanService = new PermintaanService();
         this.pengirimanService = new PengirimanService();
         this.inventoryService = new InventoryService();
+        this.masterDataService = new MasterDataService(); 
+        this.logRepo = new LogStokRepositories();
         this.penggunaRepo = new PenggunaRepositories();
     }
 
@@ -59,6 +60,17 @@ public class InventrackController {
         } catch (Exception e) {
             return "ERROR SISTEM: Gagal registrasi. " + e.getMessage();
         }
+    }
+
+    // =========================================================
+    // FUNGSI MASTER DATA (UNTUK DROPDOWN)
+    // =========================================================
+
+    /**
+     * Mengambil semua gudang untuk dropdown registrasi.
+     */
+    public List<Gudang> getAllGudang() {
+        return masterDataService.getAllGudang();
     }
 
     // =========================================================

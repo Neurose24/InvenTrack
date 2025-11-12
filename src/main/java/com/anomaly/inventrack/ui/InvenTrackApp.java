@@ -3,6 +3,8 @@ package com.anomaly.inventrack.ui;
 import com.anomaly.inventrack.controllers.InventrackController;
 import com.anomaly.inventrack.models.Pengguna;
 import com.anomaly.inventrack.ui.panels.LoginPanel;
+import com.anomaly.inventrack.ui.panels.DashboardPanel;
+import com.anomaly.inventrack.ui.panels.RegisterPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,20 +49,31 @@ public class InvenTrackApp {
     }
 
     public void showLoginScreen() {
-        LoginPanel loginPanel = new LoginPanel(this); 
-        mainFrame.setContentPane(loginPanel); 
-        mainFrame.validate(); 
+        LoginPanel loginPanel = new LoginPanel(this);
+        mainFrame.setContentPane(loginPanel);
+        mainFrame.pack(); // 🆕 Tambahkan pack() untuk menyesuaikan ukuran
+        mainFrame.setLocationRelativeTo(null); // Atur ke tengah lagi
+        mainFrame.validate();
     }
 
     public void showDashboard(Pengguna pengguna) {
-        // TODO: Ganti dengan panel Dashboard Anda
-        // DashboardPanel dashboard = new DashboardPanel(this, pengguna);
-        // mainFrame.setContentPane(dashboard);
-        // mainFrame.validate();
+        DashboardPanel dashboardPanel = new DashboardPanel(this, pengguna);
+        mainFrame.setContentPane(dashboardPanel);
+        mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.validate();
+        mainFrame.repaint();
+    }
+
+    public void showRegisterScreen() {
+        RegisterPanel registerPanel = new RegisterPanel(this);
+        mainFrame.setContentPane(registerPanel);
+        mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.validate();
+        mainFrame.repaint();
         
-        // Untuk saat ini, kita tutup saja
-        JOptionPane.showMessageDialog(mainFrame, "Login Berhasil! Selamat datang, " + pengguna.getNamaPengguna());
-        // System.exit(0);
+        registerPanel.loadGudangData();
     }
     
     // Memberikan akses Controller ke semua panel

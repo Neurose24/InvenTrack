@@ -9,9 +9,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Optional;
 
-/**
- * Panel UI Swing untuk layar Login.
- */
 public class LoginPanel extends JPanel {
 
     private final InvenTrackApp mainApp;
@@ -20,11 +17,12 @@ public class LoginPanel extends JPanel {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
+    private JButton btnRegister; // 🆕 Tombol baru
     private JLabel lblError;
 
     public LoginPanel(InvenTrackApp mainApp) {
         this.mainApp = mainApp;
-        this.controller = mainApp.getController(); // Dapatkan controller dari App utama
+        this.controller = mainApp.getController();
 
         initComponents();
         layoutComponents();
@@ -35,15 +33,15 @@ public class LoginPanel extends JPanel {
         txtUsername = new JTextField(20);
         txtPassword = new JPasswordField(20);
         btnLogin = new JButton("Login");
-        lblError = new JLabel(" "); // Label untuk pesan error
+        btnRegister = new JButton("Register"); // 🆕 Inisialisasi tombol
+        lblError = new JLabel(" ");
         lblError.setForeground(Color.RED);
     }
 
     private void layoutComponents() {
-        // Menggunakan GridBagLayout untuk form yang rapi
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10); // Padding
+        gbc.insets = new Insets(5, 10, 5, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Baris 0: Label Username
@@ -71,20 +69,27 @@ public class LoginPanel extends JPanel {
         gbc.gridy = 2;
         add(lblError, gbc);
 
-        // Baris 3: Tombol Login
+        // =========================================================
+        // 🆕 PERBAIKAN: Membuat panel untuk menampung kedua tombol
+        // =========================================================
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Rata kanan
+        buttonPanel.add(btnRegister); // Tambahkan tombol Register
+        buttonPanel.add(btnLogin);    // Tambahkan tombol Login
+
+        // Baris 3: Panel Tombol
         gbc.gridx = 1;
         gbc.gridy = 3;
-        gbc.fill = GridBagConstraints.NONE; // Jangan lebarkan tombol
-        gbc.anchor = GridBagConstraints.EAST; // Rata kanan
-        add(btnLogin, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.EAST;
+        add(buttonPanel, gbc);
     }
 
     private void attachListeners() {
-        // Event handler saat tombol login ditekan
         btnLogin.addActionListener(this::handleLogin);
-        
-        // Juga handle saat menekan "Enter" di field password
         txtPassword.addActionListener(this::handleLogin);
+        
+        // 🆕 Tambahkan listener untuk tombol Register
+        btnRegister.addActionListener(this::handleRegister);
     }
 
     /**
@@ -94,23 +99,26 @@ public class LoginPanel extends JPanel {
         String username = txtUsername.getText();
         String password = new String(txtPassword.getPassword());
 
-        // Validasi input
         if (username.isEmpty() || password.isEmpty()) {
             lblError.setText("Username dan Password wajib diisi.");
             return;
         }
 
-        // Panggil Controller Backend
         Optional<Pengguna> loginResult = controller.login(username, password);
 
-        // Proses hasil
         if (loginResult.isPresent()) {
-            // Sukses
             lblError.setText(" ");
             mainApp.showDashboard(loginResult.get());
         } else {
-            // Gagal
             lblError.setText("Login Gagal. Cek username/password.");
         }
+    }
+
+    /**
+     * 🆕 Logika yang dijalankan saat tombol Register ditekan.
+     */
+    private void handleRegister(ActionEvent e) {
+        // Panggil metode di main app untuk beralih layar
+        mainApp.showRegisterScreen();
     }
 }

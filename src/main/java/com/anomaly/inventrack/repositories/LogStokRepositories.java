@@ -22,12 +22,12 @@ public class LogStokRepositories {
 
             while (rs.next()) {
                 LogStok log = new LogStok(
-                        rs.getInt("idLog"),
-                        rs.getInt("idGudang"),
-                        rs.getInt("idBarang"),
-                        rs.getObject("tipeTransaksi", LogStok.TipeTransaksi.class),
-                        rs.getInt("jumlahPerubahan"),
-                        rs.getTimestamp("tanggalLog").toLocalDateTime(),
+                        rs.getInt("id_log"),
+                        rs.getInt("id_gudang"),
+                        rs.getInt("id_barang"),
+                        rs.getObject("tipe_transaksi", LogStok.TipeTransaksi.class),
+                        rs.getInt("jumlah_perubahan"),
+                        rs.getTimestamp("tanggal_log").toLocalDateTime(),
                         rs.getString("keterangan")
                 );
                 list.add(log);
@@ -44,9 +44,9 @@ public class LogStokRepositories {
         // Query SQL yang menggabungkan (JOIN) log_stok dengan barang dan gudang
         String sql = "SELECT l.*, b.namaBarang, g.namaGudang " +
                      "FROM log_stok l " +
-                     "JOIN barang b ON l.idBarang = b.idBarang " +
-                     "JOIN gudang g ON l.idGudang = g.idGudang " +
-                     "ORDER BY l.tanggalLog DESC";
+                     "JOIN barang b ON l.id_barang = b.id_barang " +
+                     "JOIN gudang g ON l.id_gudang = g.id_gudang " +
+                     "ORDER BY l.tanggal_log DESC";
         
         List<LogStokDetail> list = new ArrayList<>();
         
@@ -59,12 +59,12 @@ public class LogStokRepositories {
                 LogStokDetail logDetail = new LogStokDetail();
                 
                 // 1. Set properti dari LogStok (dasar)
-                logDetail.setIdLog(rs.getInt("idLog"));
-                logDetail.setIdGudang(rs.getInt("idGudang"));
-                logDetail.setIdBarang(rs.getInt("idBarang"));
-                logDetail.setTipeTransaksi(rs.getObject("tipeTransaksi", TipeTransaksi.class));
-                logDetail.setJumlahPerubahan(rs.getInt("jumlahPerubahan"));
-                logDetail.setTanggalLog(rs.getTimestamp("tanggalLog").toLocalDateTime());
+                logDetail.setIdLog(rs.getInt("id_log"));
+                logDetail.setIdGudang(rs.getInt("id_gudang"));
+                logDetail.setIdBarang(rs.getInt("id_barang"));
+                logDetail.setTipeTransaksi(rs.getObject("tipe_transaksi", TipeTransaksi.class));
+                logDetail.setJumlahPerubahan(rs.getInt("jumlah_perubahan"));
+                logDetail.setTanggalLog(rs.getTimestamp("tanggal_log").toLocalDateTime());
                 logDetail.setKeterangan(rs.getString("keterangan"));
                 
                 // 2. Set properti tambahan dari hasil JOIN
@@ -84,7 +84,7 @@ public class LogStokRepositories {
 
     public void insert(Connection conn, LogStok log) throws SQLException {
     // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
-    String sql = "INSERT INTO log_stok (idGudang, idBarang, tipeTransaksi, jumlahPerubahan, tanggalLog, keterangan) " +
+    String sql = "INSERT INTO log_stok (id_gudang, id_barang, tipe_transaksi, jumlah_perubahan, tanggal_log, keterangan) " +
                  "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 

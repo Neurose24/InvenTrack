@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class BarangRepositories {
     public List<Barang> findAll() {
-        String sql = "SELECT idBarang, namaBarang, kategori, satuan, deskripsi FROM barang";
+        String sql = "SELECT id_barang, nama_barang, kategori, satuan, deskripsi FROM barang";
         List<Barang> list = new ArrayList<>();
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -25,12 +25,12 @@ public class BarangRepositories {
         return list;
     }
 
-    public Optional<Barang> findById (Integer idBarang) {
-        String sql = "SELECT idBarang, namaBarang, kategori, satuan, deskripsi FROM barang WHERE id_barang = ?";
+    public Optional<Barang> findById (Integer id_barang) {
+        String sql = "SELECT id_barang, nama_barang, kategori, satuan, deskripsi FROM barang WHERE id_barang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idBarang);
+            ps.setInt(1, id_barang);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapToBarang(rs));
@@ -43,7 +43,7 @@ public class BarangRepositories {
     }
 
     public int save(Barang b) {
-        String sql = "INSERT INTO barang (namaBarang, kategori, satuan, deskripsi) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO barang (nama_barang, kategori, satuan, deskripsi) VALUES (?, ?, ?, ?)";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -67,7 +67,7 @@ public class BarangRepositories {
     }
 
     public boolean update(Barang b) {
-        String sql = "UPDATE barang SET namaBarang = ?, kategori = ?, satuan = ?, deskripsi = ? WHERE idBarang = ?";
+        String sql = "UPDATE barang SET nama_barang = ?, kategori = ?, satuan = ?, deskripsi = ? WHERE id_barang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, b.getNamaBarang());
@@ -82,7 +82,7 @@ public class BarangRepositories {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM barang WHERE idBarang = ?";
+        String sql = "DELETE FROM barang WHERE id_barang = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -94,8 +94,8 @@ public class BarangRepositories {
 
     private Barang mapToBarang(ResultSet rs) throws SQLException {
         Barang b = new Barang();
-        b.setIdBarang(rs.getInt("idBarang"));
-        b.setNamaBarang(rs.getString("namaBarang"));
+        b.setIdBarang(rs.getInt("id_barang"));
+        b.setNamaBarang(rs.getString("nama_barang"));
         b.setKategori(rs.getString("kategori"));
         b.setSatuan(rs.getString("satuan"));
         b.setDeskripsi(rs.getString("deskripsi"));

@@ -21,11 +21,11 @@ public class PermintaanRepositories {
 
             while (rs.next()) {
                 Permintaan p = new Permintaan(
-                        rs.getInt("idPermintaan"),
-                        rs.getInt("idPenggunaPeminta"),
-                        rs.getTimestamp("tanggalPermintaan").toLocalDateTime(),
-                        rs.getObject("statusPermintaan", Permintaan.StatusPermintaan.class),
-                        rs.getString("catatanPermintaan")
+                        rs.getInt("id_permintaan"),
+                        rs.getInt("id_pengguna_peminta"),
+                        rs.getTimestamp("tanggal_permintaan").toLocalDateTime(),
+                        rs.getObject("status_permintaan", Permintaan.StatusPermintaan.class),
+                        rs.getString("catatan_permintaan")
                 );
                 list.add(p);
             }
@@ -37,21 +37,21 @@ public class PermintaanRepositories {
         return list;
     }
 
-    public Optional<Permintaan> findById(int idPermintaan) {
-        String sql = "SELECT * FROM permintaan WHERE idPermintaan = ?";
+    public Optional<Permintaan> findById(int id_permintaan) {
+        String sql = "SELECT * FROM permintaan WHERE id_permintaan = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idPermintaan);
+            ps.setInt(1, id_permintaan);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(new Permintaan(
-                            rs.getInt("idPermintaan"),
-                            rs.getInt("idPenggunaPeminta"),
-                            rs.getTimestamp("tanggalPermintaan").toLocalDateTime(),
-                            rs.getObject("statusPermintaan", Permintaan.StatusPermintaan.class),
-                            rs.getString("catatanPermintaan")
+                            rs.getInt("id_permintaan"),
+                            rs.getInt("id_pengguna_peminta"),
+                            rs.getTimestamp("tanggal_permintaan").toLocalDateTime(),
+                            rs.getObject("status_permintaan", Permintaan.StatusPermintaan.class),
+                            rs.getString("catatan_permintaan")
                     ));
                 }
             }
@@ -63,7 +63,7 @@ public class PermintaanRepositories {
     }
 
     public void insert(Connection conn, Permintaan permintaan) throws SQLException {
-        String sql = "INSERT INTO permintaan (idPenggunaPeminta, tanggalPermintaan, statusPermintaan, catatanPermintaan) " +
+        String sql = "INSERT INTO permintaan (id_pengguna_peminta, tanggal_permintaan, status_permintaan, catatan_permintaan) " +
                      "VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -82,11 +82,11 @@ public class PermintaanRepositories {
         }
     }
 
-    public void updateStatus(Connection conn, int idPermintaan, Permintaan.StatusPermintaan status) throws SQLException {
-    String sql = "UPDATE permintaan SET statusPermintaan = ? WHERE idPermintaan = ?";
+    public void updateStatus(Connection conn, int id_permintaan, Permintaan.StatusPermintaan status) throws SQLException {
+    String sql = "UPDATE permintaan SET status_permintaan = ? WHERE id_permintaan = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setObject(1, status.toString()); // Sesuaikan tipe data ENUM/String di DB
-            ps.setInt(2, idPermintaan);
+            ps.setInt(2, id_permintaan);
             ps.executeUpdate();
         }
     }

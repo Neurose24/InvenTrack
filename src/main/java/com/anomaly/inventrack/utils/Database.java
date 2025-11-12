@@ -11,7 +11,7 @@ public class Database {
 
     static {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(Config.get("db.url"));
+        config.setJdbcUrl("jdbc:mysql://sql12.freesqldatabase.com:3306/sql12802820");
         config.setUsername(Config.get("db.user"));
         config.setPassword(Config.get("db.password"));
         config.setMaximumPoolSize(Config.getInt("db.pool.maximumPoolSize", 10));

@@ -8,25 +8,25 @@ import java.util.List;
 
 public class DetailPengirimanRepositories {
 
-    public List<DetailPengiriman> findByPengiriman(int idPengiriman) {
+    public List<DetailPengiriman> findByPengiriman(int id_pengiriman) {
         List<DetailPengiriman> list = new ArrayList<>();
-        String sql = "SELECT * FROM detailPengiriman WHERE idPengiriman = ?";
+        String sql = "SELECT * FROM detail_pengiriman WHERE id_pengiriman = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idPengiriman);
+            ps.setInt(1, id_pengiriman);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 DetailPengiriman dp = new DetailPengiriman(
-                        rs.getInt("idDetailPengiriman"),
-                        rs.getInt("idPengiriman"),
-                        rs.getInt("idBarang"),
-                        rs.getInt("jumlahDikirim"),
-                        rs.getInt("jumlahDiterima"),
-                        rs.getObject("statusPenerimaan", DetailPengiriman.StatusPenerimaan.class),
-                        rs.getString("catatanPenerimaan")
+                        rs.getInt("id_detail_pengiriman"),
+                        rs.getInt("id_pengiriman"),
+                        rs.getInt("id_barang"),
+                        rs.getInt("jumlah_dikirim"),
+                        rs.getInt("jumlah_diterima"),
+                        rs.getObject("status_penerimaan", DetailPengiriman.StatusPenerimaan.class),
+                        rs.getString("catatan_penerimaan")
                 );
                 list.add(dp);
             }
@@ -38,7 +38,7 @@ public class DetailPengirimanRepositories {
     }
 
     public void insert(Connection conn, DetailPengiriman detailPengiriman) throws SQLException {
-        String sql = "INSERT INTO detailPengiriman (idPengiriman, idBarang, jumlahDikirim, jumlahDiterima, statusPenerimaan, catatanPenerimaan) " +
+        String sql = "INSERT INTO detail_pengiriman (id_pengiriman, id_barang, jumlah_dikirim, jumlah_diterima, status_penerimaan, catatan_penerimaan) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, detailPengiriman.getIdPengiriman());
@@ -59,13 +59,13 @@ public class DetailPengirimanRepositories {
         }
     }
 
-    public void updatePenerimaan(Connection conn, int idDetailPengiriman, int jumlahDiterima, DetailPengiriman.StatusPenerimaan status, String catatan) throws SQLException {
-    String sql = "UPDATE detailPengiriman SET jumlahDiterima = ?, statusPenerimaan = ?, catatanPenerimaan = ? WHERE idDetailPengiriman = ?";
+    public void updatePenerimaan(Connection conn, int id_detail_pengiriman, int jumlah_diterima, DetailPengiriman.StatusPenerimaan status, String catatan) throws SQLException {
+    String sql = "UPDATE detail_pengiriman SET jumlah_diterima = ?, status_penerimaan = ?, catatan_penerimaan = ? WHERE id_detail_pengiriman = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, jumlahDiterima);
+            ps.setInt(1, jumlah_diterima);
             ps.setObject(2, status.toString()); 
             ps.setString(3, catatan);
-            ps.setInt(4, idDetailPengiriman);
+            ps.setInt(4, id_detail_pengiriman);
             ps.executeUpdate();
         }
     }

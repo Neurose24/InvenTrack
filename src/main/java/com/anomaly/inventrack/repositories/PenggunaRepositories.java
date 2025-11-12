@@ -19,11 +19,11 @@ public class PenggunaRepositories {
             try (ResultSet rs = ps.executeQuery()) { // <-- Gunakan try-with-resources untuk ResultSet
                 if (rs.next()) {
                     return Optional.of(new Pengguna( // <-- Gunakan Optional.of()
-                        rs.getInt("idPengguna"),
-                        rs.getString("namaPengguna"),
+                        rs.getInt("id_pengguna"),
+                        rs.getString("nama_pengguna"),
                         rs.getString("username"),
-                        rs.getString("passwordHash"),
-                        rs.getInt("idGudang")
+                        rs.getString("password"),
+                        rs.getInt("id_gudang")
                     ));
                 }
             }
@@ -34,20 +34,20 @@ public class PenggunaRepositories {
         return Optional.empty(); // <-- Kembalikan Optional kosong jika tidak ditemukan
     }
 
-    public Optional<Pengguna> findById(int idPengguna) {
-        String sql = "SELECT * FROM pengguna WHERE idPengguna = ?";
+    public Optional<Pengguna> findById(int id_pengguna) {
+        String sql = "SELECT * FROM pengguna WHERE id_pengguna = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idPengguna);
+            ps.setInt(1, id_pengguna);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(new Pengguna(
-                        rs.getInt("idPengguna"),
-                        rs.getString("namaPengguna"),
+                        rs.getInt("id_pengguna"),
+                        rs.getString("nama_pengguna"),
                         rs.getString("username"),
-                        rs.getString("passwordHash"),
-                        rs.getInt("idGudang")
+                        rs.getString("password"),
+                        rs.getInt("id_gudang")
                     ));
                 }
             }
@@ -67,11 +67,11 @@ public class PenggunaRepositories {
 
             while (rs.next()) {
                 Pengguna p = new Pengguna(
-                        rs.getInt("idPengguna"),
-                        rs.getString("namaPengguna"),
+                        rs.getInt("id_pengguna"),
+                        rs.getString("nama_pengguna"),
                         rs.getString("username"),
-                        rs.getString("passwordHash"),
-                        rs.getInt("idGudang")
+                        rs.getString("password"),
+                        rs.getInt("id_gudang")
                 );
                 list.add(p);
             }
@@ -82,16 +82,16 @@ public class PenggunaRepositories {
         return list;
     }
 
-    public int findGudangIdByPenggunaId(int idPengguna) {
-        String sql = "SELECT idGudang FROM pengguna WHERE idPengguna = ?";
+    public int findGudangIdByPenggunaId(int id_pengguna) {
+        String sql = "SELECT id_gudang FROM pengguna WHERE id_pengguna = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idPengguna);
+            ps.setInt(1, id_pengguna);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return rs.getInt("idGudang");
+                return rs.getInt("id_gudang");
             }
 
         } catch (SQLException e) {
@@ -101,7 +101,7 @@ public class PenggunaRepositories {
     }
 
     public Pengguna saveUser(Pengguna pengguna) {
-        String sql = "INSERT INTO pengguna (namaPengguna, username, passwordHash, idGudang) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO pengguna (nama_pengguna, username, password, id_gudang) VALUES (?, ?, ?, ?)";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             

@@ -20,10 +20,10 @@ public class SupirRepositories {
 
             while (rs.next()) {
                 Supir s = new Supir(
-                        rs.getInt("idSupir"),
-                        rs.getString("namaSupir"),
-                        rs.getString("noHp"),
-                        rs.getString("noKendaraan")
+                        rs.getInt("id_supir"),
+                        rs.getString("nama_supir"),
+                        rs.getString("no_hp"),
+                        rs.getString("no_kendaraan")
                 );
                 list.add(s);
             }
@@ -35,19 +35,19 @@ public class SupirRepositories {
         return list;
     }
 
-    public Optional<Supir> findById(int idSupir) {
-        String sql = "SELECT * FROM supir WHERE idSupir = ?";
+    public Optional<Supir> findById(int id_supir) {
+        String sql = "SELECT * FROM supir WHERE id_supir = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idSupir);
+            ps.setInt(1, id_supir);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(new Supir(
-                            rs.getInt("idSupir"),
-                            rs.getString("namaSupir"),
-                            rs.getString("noHp"),
-                            rs.getString("noKendaraan")
+                            rs.getInt("id_supir"),
+                            rs.getString("nama_supir"),
+                            rs.getString("no_hp"),
+                            rs.getString("no_kendaraan")
                     ));
                 }
             }
@@ -59,7 +59,7 @@ public class SupirRepositories {
     }
 
     public void saveSupir(Supir supir) {
-        String sql = "INSERT INTO supir (namaSupir, noHp, noKendaraan) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO supir (nama_supir, no_hp, no_kendaraan) VALUES (?, ?, ?)";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -85,12 +85,12 @@ public class SupirRepositories {
         }
     }
 
-    public boolean deleteSupir(int idSupir) {
-        String sql = "DELETE FROM supir WHERE idSupir = ?";
+    public boolean deleteSupir(int id_supir) {
+        String sql = "DELETE FROM supir WHERE id_supir = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, idSupir);
+            ps.setInt(1, id_supir);
             int affectedRows = ps.executeUpdate();
             return affectedRows > 0;
 
