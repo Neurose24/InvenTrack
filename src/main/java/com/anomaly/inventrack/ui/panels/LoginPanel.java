@@ -5,96 +5,120 @@ import com.anomaly.inventrack.models.Pengguna;
 import com.anomaly.inventrack.ui.InvenTrackApp;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Optional;
+
+// Menggunakan warna dari BrandingPanel
+import static com.anomaly.inventrack.ui.panels.BrandingPanel.COLOR_TEAL;
+import static com.anomaly.inventrack.ui.panels.BrandingPanel.COLOR_WHITE;
+import static com.anomaly.inventrack.ui.panels.BrandingPanel.COLOR_BLACK;
 
 public class LoginPanel extends JPanel {
 
     private final InvenTrackApp mainApp;
     private final InventrackController controller;
 
+    // Komponen form
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
-    private JButton btnRegister; // 🆕 Tombol baru
+    private JButton btnRegister;
     private JLabel lblError;
 
     public LoginPanel(InvenTrackApp mainApp) {
         this.mainApp = mainApp;
         this.controller = mainApp.getController();
 
-        initComponents();
-        layoutComponents();
+        // Layout utama: 1 baris, 2 kolom
+        setLayout(new GridLayout(1, 2));
+
+        // Tambahkan panel branding (kiri) dan panel form (kanan)
+        add(new BrandingPanel());
+        add(createLoginFormPanel()); // Buat panel form
+        
+        // Listener harus dipasang setelah komponen dibuat
         attachListeners();
     }
 
-    private void initComponents() {
+    /**
+     * Membuat Panel Form Login (Sisi Kanan)
+     */
+    private JPanel createLoginFormPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(COLOR_WHITE);
+        panel.setBorder(new EmptyBorder(20, 30, 20, 30));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Inisialisasi komponen
         txtUsername = new JTextField(20);
         txtPassword = new JPasswordField(20);
         btnLogin = new JButton("Login");
-        btnRegister = new JButton("Register"); // 🆕 Inisialisasi tombol
+        btnRegister = new JButton("Sign Up");
         lblError = new JLabel(" ");
         lblError.setForeground(Color.RED);
-    }
+        lblError.setHorizontalAlignment(SwingConstants.CENTER);
 
-    private void layoutComponents() {
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 10, 5, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        // Judul "LOGIN"
+        JLabel lblTitle = new JLabel("LOGIN");
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 28));
+        lblTitle.setForeground(COLOR_BLACK);
+        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+        gbc.insets = new Insets(10, 8, 20, 8);
+        panel.add(lblTitle, gbc);
 
-        // Baris 0: Label Username
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        add(new JLabel("Username:"), gbc);
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.gridwidth = 1;
 
-        // Baris 0: Textbox Username
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        add(txtUsername, gbc);
+        // Form fields
+        gbc.gridx = 0; gbc.gridy = 1; panel.add(new JLabel("Username:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 1; panel.add(txtUsername, gbc);
 
-        // Baris 1: Label Password
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        add(new JLabel("Password:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 2; panel.add(new JLabel("Password:"), gbc);
+        gbc.gridx = 1; gbc.gridy = 2; panel.add(txtPassword, gbc);
 
-        // Baris 1: Textbox Password
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        add(txtPassword, gbc);
+        // Label Error
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        panel.add(lblError, gbc);
 
-        // Baris 2: Label Error
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        add(lblError, gbc);
+        // Tombol Login (Utama)
+        btnLogin.setBackground(COLOR_TEAL);
+        btnLogin.setForeground(COLOR_BLACK);
+        btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
+        btnLogin.setOpaque(true);
+        btnLogin.setBorderPainted(false);
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
+        gbc.insets = new Insets(15, 8, 8, 8);
+        panel.add(btnLogin, gbc);
 
-        // =========================================================
-        // 🆕 PERBAIKAN: Membuat panel untuk menampung kedua tombol
-        // =========================================================
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0)); // Rata kanan
-        buttonPanel.add(btnRegister); // Tambahkan tombol Register
-        buttonPanel.add(btnLogin);    // Tambahkan tombol Login
-
-        // Baris 3: Panel Tombol
-        gbc.gridx = 1;
-        gbc.gridy = 3;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        // "I don't have an account"
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 1;
+        gbc.insets = new Insets(20, 8, 8, 8);
         gbc.anchor = GridBagConstraints.EAST;
-        add(buttonPanel, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(new JLabel("I don't have an account"), gbc);
+
+        // Tombol Sign Up (Sekunder)
+        btnRegister.setBackground(COLOR_WHITE);
+        btnRegister.setForeground(Color.DARK_GRAY);
+        gbc.gridx = 1; gbc.gridy = 5;
+        gbc.insets = new Insets(20, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(btnRegister, gbc);
+
+        return panel;
     }
 
     private void attachListeners() {
         btnLogin.addActionListener(this::handleLogin);
         txtPassword.addActionListener(this::handleLogin);
-        
-        // 🆕 Tambahkan listener untuk tombol Register
-        btnRegister.addActionListener(this::handleRegister);
+        btnRegister.addActionListener(e -> mainApp.showRegisterScreen());
     }
 
-    /**
-     * Logika yang dijalankan saat tombol Login ditekan.
-     */
     private void handleLogin(ActionEvent e) {
         String username = txtUsername.getText();
         String password = new String(txtPassword.getPassword());
@@ -104,7 +128,9 @@ public class LoginPanel extends JPanel {
             return;
         }
 
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Optional<Pengguna> loginResult = controller.login(username, password);
+        setCursor(Cursor.getDefaultCursor());
 
         if (loginResult.isPresent()) {
             lblError.setText(" ");
@@ -112,13 +138,5 @@ public class LoginPanel extends JPanel {
         } else {
             lblError.setText("Login Gagal. Cek username/password.");
         }
-    }
-
-    /**
-     * 🆕 Logika yang dijalankan saat tombol Register ditekan.
-     */
-    private void handleRegister(ActionEvent e) {
-        // Panggil metode di main app untuk beralih layar
-        mainApp.showRegisterScreen();
     }
 }

@@ -18,9 +18,22 @@ public class InvenTrackApp {
     private JFrame mainFrame;
     private InventrackController controller;
 
+    private final Dimension FIXED_WINDOW_SIZE = new Dimension(1100, 700);
+
     public static void main(String[] args) {
-        // Menjalankan aplikasi di Event Dispatch Thread (EDT) - Wajib untuk Swing
         EventQueue.invokeLater(() -> {
+            try {
+                // Terapkan Look and Feel yang lebih baik (Nimbus)
+                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                // Jika Nimbus tidak tersedia, gunakan default
+            }
+            
             try {
                 InvenTrackApp app = new InvenTrackApp();
                 app.createAndShowGUI();
@@ -31,18 +44,14 @@ public class InvenTrackApp {
     }
 
     public InvenTrackApp() {
-        // Inisialisasi Controller Backend
         this.controller = new InventrackController();
     }
 
     private void createAndShowGUI() {
-        // Membuat Jendela Utama
         mainFrame = new JFrame("Inventrack - Sistem Inventaris");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setSize(400, 300); // Ukuran awal
-        mainFrame.setLocationRelativeTo(null); // Tampilkan di tengah layar
+        mainFrame.setResizable(false); // Mencegah ukuran diubah
 
-        // Tampilkan LoginPanel saat startup
         showLoginScreen();
 
         mainFrame.setVisible(true);
@@ -51,15 +60,15 @@ public class InvenTrackApp {
     public void showLoginScreen() {
         LoginPanel loginPanel = new LoginPanel(this);
         mainFrame.setContentPane(loginPanel);
-        mainFrame.pack(); // 🆕 Tambahkan pack() untuk menyesuaikan ukuran
-        mainFrame.setLocationRelativeTo(null); // Atur ke tengah lagi
+        mainFrame.pack(); // Mengatur ukuran frame pas dengan LoginPanel
+        mainFrame.setLocationRelativeTo(null); // Posisikan di tengah
         mainFrame.validate();
     }
 
     public void showDashboard(Pengguna pengguna) {
         DashboardPanel dashboardPanel = new DashboardPanel(this, pengguna);
         mainFrame.setContentPane(dashboardPanel);
-        mainFrame.pack();
+        mainFrame.pack(); // Mengatur ukuran frame pas dengan DashboardPanel
         mainFrame.setLocationRelativeTo(null);
         mainFrame.validate();
         mainFrame.repaint();

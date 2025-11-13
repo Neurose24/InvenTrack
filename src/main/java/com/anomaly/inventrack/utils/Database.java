@@ -10,11 +10,12 @@ public class Database {
     private static final HikariDataSource ds;
 
     static {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://sql12.freesqldatabase.com:3306/sql12802820");
+        try{
+            HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(Config.get("db.url"));
         config.setUsername(Config.get("db.user"));
         config.setPassword(Config.get("db.password"));
-        config.setMaximumPoolSize(Config.getInt("db.pool.maximumPoolSize", 10));
+        config.setMaximumPoolSize(Config.getInt("db.pool.maximumPoolSize", 5));
         config.setConnectionTimeout(Long.parseLong(Config.get("db.pool.connectionTimeout") == null ? "30000" : Config.get("db.pool.connectionTimeout")));
         config.setPoolName("InventrackPool");
 
@@ -23,6 +24,11 @@ public class Database {
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
         ds = new HikariDataSource(config);
+        } catch (Exception e) {
+            System.err.println("Gagal inisialisasi database pool!");
+            e.printStackTrace();
+            throw new ExceptionInInitializerError(e);
+        }
     }
 
     private Database() {
