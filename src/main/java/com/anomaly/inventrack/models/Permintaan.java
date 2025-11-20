@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public class Permintaan implements Serializable {
     private Integer idPermintaan;
     private Integer idPenggunaPeminta;
+    private Integer idGudangSumber;
     private LocalDateTime tanggalPermintaan;
     private StatusPermintaan statusPermintaan;
     private String catatanPermintaan;
@@ -20,9 +21,10 @@ public class Permintaan implements Serializable {
     public Permintaan() {
     }
 
-    public Permintaan(Integer idPermintaan, Integer idPenggunaPeminta, LocalDateTime tanggalPermintaan, StatusPermintaan statusPermintaan, String catatanPermintaan) {
+    public Permintaan(Integer idPermintaan, Integer idPenggunaPeminta, Integer idGudangSumber, LocalDateTime tanggalPermintaan, StatusPermintaan statusPermintaan, String catatanPermintaan) {
         this.idPermintaan = idPermintaan;
         this.idPenggunaPeminta = idPenggunaPeminta;
+        this.idGudangSumber = idGudangSumber;
         this.tanggalPermintaan = tanggalPermintaan;
         this.statusPermintaan = statusPermintaan;
         this.catatanPermintaan = catatanPermintaan;
@@ -33,6 +35,9 @@ public class Permintaan implements Serializable {
 
     public Integer getIdPenggunaPeminta() { return idPenggunaPeminta; }
     public void setIdPenggunaPeminta(Integer idPenggunaPeminta) { this.idPenggunaPeminta = idPenggunaPeminta; }
+
+    public Integer getIdGudangSumber() { return idGudangSumber; }
+    public void setIdGudangSumber(Integer idGudangSumber) { this.idGudangSumber = idGudangSumber; }
 
     public LocalDateTime getTanggalPermintaan() { return tanggalPermintaan; }
     public void setTanggalPermintaan(LocalDateTime tanggalPermintaan) { this.tanggalPermintaan = tanggalPermintaan; }
@@ -48,6 +53,7 @@ public class Permintaan implements Serializable {
         return "Permintaan{" +
                 "idPermintaan=" + idPermintaan +
                 ", idPenggunaPeminta=" + idPenggunaPeminta +
+                ", idGudangSumber=" + idGudangSumber +
                 ", tanggalPermintaan=" + tanggalPermintaan +
                 ", statusPermintaan=" + statusPermintaan +
                 ", catatanPermintaan='" + catatanPermintaan + '\'' +

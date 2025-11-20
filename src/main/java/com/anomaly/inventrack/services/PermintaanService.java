@@ -10,26 +10,19 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public class PermintaanService {
 
     private final PermintaanRepositories permintaanRepo;
     private final DetailPermintaanRepositories detailPermintaanRepo;
-    private final StokRepositories stokRepo;
-    private final LogStokRepositories logStokRepo;
     private final PenggunaRepositories penggunaRepo;
-    
-    // INTEGRASI: Tambahkan InventoryService
     private final InventoryService inventoryService; 
 
     public PermintaanService() {
         this.permintaanRepo = new PermintaanRepositories();
         this.detailPermintaanRepo = new DetailPermintaanRepositories();
-        this.stokRepo = new StokRepositories();
-        this.logStokRepo = new LogStokRepositories();
         this.penggunaRepo = new PenggunaRepositories();
-        this.inventoryService = new InventoryService(); // Inisialisasi InventoryService
+        this.inventoryService = new InventoryService(); 
     }
     
     // =========================================================
@@ -43,30 +36,58 @@ public class PermintaanService {
      * @throws RuntimeException Jika terjadi kesalahan database (rollback dilakukan).
      */
     public Permintaan buatPermintaanBaru(Permintaan permintaan, List<DetailPermintaan> detailList) {
-        // Aturan Bisnis: Atur status dan tanggal awal
-        permintaan.setStatusPermintaan(Permintaan.StatusPermintaan.MENUNGGU); //
+        // 1. Validasi Input Dasar
+        if (permintaan.getIdGudangSumber() == null) {
+            throw new BusinessException("Harap pilih Gudang Sumber (Tujuan Permintaan).");
+        }
+
+        // 2. Validasi Self-Request (Mencegah minta ke diri sendiri)
+        // Ambil data peminta untuk tahu dia dari gudang mana
+        Pengguna peminta = penggunaRepo.findById(permintaan.getIdPenggunaPeminta())
+                .orElseThrow(() -> new NotFoundException("Data peminta tidak valid."));
+        
+        if (peminta.getIdGudang().equals(permintaan.getIdGudangSumber())) {
+             throw new BusinessException("Tidak dapat membuat permintaan ke gudang sendiri!");
+        }
+
+        for (DetailPermintaan detail : detailList) {
+            try {
+                // Cek stok barang di gudang sumber
+                Stok stokSumber = inventoryService.getStok(detail.getIdBarang(), permintaan.getIdGudangSumber());
+                
+                // Cek apakah jumlahnya cukup
+                if (stokSumber.getJumlahStok() < detail.getJumlahDiminta()) {
+                    throw new BusinessException("Stok tidak mencukupi di Gudang Sumber untuk Barang ID: " + detail.getIdBarang() + 
+                                                ". Tersedia: " + stokSumber.getJumlahStok() + 
+                                                ", Diminta: " + detail.getJumlahDiminta());
+                }
+            } catch (BusinessException e) {
+                // Tangkap jika barang tidak terdaftar sama sekali di gudang sumber
+                // (InventoryService.getStok melempar exception jika stok null/tidak ditemukan)
+                throw new BusinessException("Barang ID " + detail.getIdBarang() + " tidak tersedia/tidak terdaftar di Gudang Sumber.");
+            }
+        }
+
+        // 3. Setup Default
+        permintaan.setStatusPermintaan(Permintaan.StatusPermintaan.MENUNGGU);
         permintaan.setTanggalPermintaan(LocalDateTime.now());
 
         Connection conn = null;
         try {
             conn = Database.getConnection();
-            conn.setAutoCommit(false); // Mulai transaksi
+            conn.setAutoCommit(false); 
 
-            // 1. Simpan Permintaan Induk
-            // Method insert di Repo Anda menerima Connection dan mengupdate ID
+            // 4. Simpan Permintaan (Repo insert sekarang menyimpan idGudangSumber)
             permintaanRepo.insert(conn, permintaan); 
             Integer idPermintaanBaru = permintaan.getIdPermintaan();
             
-            // 2. Simpan Detail Permintaan
             for (DetailPermintaan detail : detailList) {
-                detail.setIdPermintaan(idPermintaanBaru); // Kaitkan ID
-                // Aturan Bisnis: Awalnya jumlah disetujui sama dengan jumlah diminta
+                detail.setIdPermintaan(idPermintaanBaru); 
                 detail.setJumlahDisetujui(detail.getJumlahDiminta()); 
-                
                 detailPermintaanRepo.insert(conn, detail); 
             }
 
-            conn.commit(); // Komit transaksi
+            conn.commit(); 
             return permintaan;
 
         } catch (SQLException e) {
@@ -105,47 +126,39 @@ public class PermintaanService {
         Connection conn = null;
         try {
             conn = Database.getConnection();
-            conn.setAutoCommit(false); // Mulai transaksi untuk operasi Permintaan/DetailPermintaan
+            conn.setAutoCommit(false); 
 
-            // 1. Ambil data Permintaan dan Detail
-            // Asumsi findById di PermintaanRepositories sudah mengembalikan Optional
+            // 1. Validasi Permintaan
             Permintaan permintaan = permintaanRepo.findById(idPermintaan)
                 .orElseThrow(() -> new NotFoundException("Permintaan dengan ID " + idPermintaan + " tidak ditemukan."));
 
-            // 2. Cek Status (Aturan Bisnis)
             if (permintaan.getStatusPermintaan() != Permintaan.StatusPermintaan.MENUNGGU) {
-                throw new RuntimeException("Permintaan sudah diproses (Status: " + permintaan.getStatusPermintaan() + ").");
+                throw new BusinessException("Permintaan sudah diproses (Status: " + permintaan.getStatusPermintaan() + ").");
             }
 
-            Pengguna peminta = penggunaRepo.findById(permintaan.getIdPenggunaPeminta())
-                .orElseThrow(() -> new NotFoundException("Pengguna peminta dengan ID " + permintaan.getIdPenggunaPeminta() + " tidak ditemukan."));
+            // 2. Identifikasi Gudang Sumber (Gudang milik Admin)
+            Pengguna adminPenyetuju = penggunaRepo.findById(idAdminYangMenyetujui)
+                .orElseThrow(() -> new NotFoundException("Admin penyetuju tidak ditemukan."));
             
-            int idGudangAsal = peminta.getIdGudang();
-            List<DetailPermintaan> detailList = detailPermintaanRepo.findByPermintaan(idPermintaan); //
+            int idGudangSumber = adminPenyetuju.getIdGudang(); // INI SUMBER STOK
 
-            // 4. Proses Pengurangan Stok (Delegasi ke InventoryService)
+            // 3. Proses Pengurangan Stok (Dari Gudang Sumber)
+            List<DetailPermintaan> detailList = detailPermintaanRepo.findByPermintaan(idPermintaan);
+
             for (DetailPermintaan detail : detailList) {
-                int idBarang = detail.getIdBarang();
-                int jumlahDisetujui = detail.getJumlahDisetujui();
-
-                // Panggil Service lain untuk mengurangi stok
-                // InventoryService akan mengurus: 
-                // a) Cek stok
-                // b) Update tabel stok (transaksional)
-                // c) Insert log stok (transaksional)
                 inventoryService.kurangiStok(
-                    idBarang, 
-                    idGudangAsal, 
-                    jumlahDisetujui, 
-                    "Keluar karena Permintaan ID: " + idPermintaan
+                    detail.getIdBarang(), 
+                    idGudangSumber, // 🆕 Stok keluar dari Gudang Admin
+                    detail.getJumlahDisetujui(), 
+                    "Keluar untuk Permintaan ID: " + idPermintaan
                 );
             }
 
-            // 5. Update Status Permintaan menjadi DISETUJUI
-            // Ini adalah operasi database terakhir dalam transaksi PermintaanService
-            permintaanRepo.updateStatus(conn, idPermintaan, Permintaan.StatusPermintaan.DISETUJUI); 
+            // 4. Update Status & Simpan Gudang Sumber
+            // Menggunakan method khusus yang baru kita buat di Repository
+            permintaanRepo.approveRequest(conn, idPermintaan, idGudangSumber); 
 
-            conn.commit(); // Komit transaksi PermintaanService (hanya update status)
+            conn.commit(); 
             
         } catch (BusinessException e) {
             // Rollback hanya diperlukan jika ada operasi yang dilakukan di PermintaanService (saat ini belum ada)

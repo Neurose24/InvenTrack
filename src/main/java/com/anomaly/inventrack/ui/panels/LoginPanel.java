@@ -1,122 +1,50 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
 package com.anomaly.inventrack.ui.panels;
 
 import com.anomaly.inventrack.controllers.InventrackController;
 import com.anomaly.inventrack.models.Pengguna;
 import com.anomaly.inventrack.ui.InvenTrackApp;
+import com.anomaly.inventrack.ui.panels.BrandingPanel;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.util.Optional;
+import javax.swing.JOptionPane;
 
-// Menggunakan warna dari BrandingPanel
-import static com.anomaly.inventrack.ui.panels.BrandingPanel.COLOR_TEAL;
-import static com.anomaly.inventrack.ui.panels.BrandingPanel.COLOR_WHITE;
-import static com.anomaly.inventrack.ui.panels.BrandingPanel.COLOR_BLACK;
+/**
+ *
+ * @author user
+ */
+public class LoginPanel extends javax.swing.JPanel {
 
-public class LoginPanel extends JPanel {
-
-    private final InvenTrackApp mainApp;
-    private final InventrackController controller;
-
-    // Komponen form
-    private JTextField txtUsername;
-    private JPasswordField txtPassword;
-    private JButton btnLogin;
-    private JButton btnRegister;
-    private JLabel lblError;
-
-    public LoginPanel(InvenTrackApp mainApp) {
-        this.mainApp = mainApp;
-        this.controller = mainApp.getController();
-
-        // Layout utama: 1 baris, 2 kolom
-        setLayout(new GridLayout(1, 2));
-
-        // Tambahkan panel branding (kiri) dan panel form (kanan)
-        add(new BrandingPanel());
-        add(createLoginFormPanel()); // Buat panel form
-        
-        // Listener harus dipasang setelah komponen dibuat
-        attachListeners();
-    }
+    private InvenTrackApp mainApp;
+    private InventrackController controller;
 
     /**
-     * Membuat Panel Form Login (Sisi Kanan)
+     * Creates new form LoginPanel
      */
-    private JPanel createLoginFormPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(COLOR_WHITE);
-        panel.setBorder(new EmptyBorder(20, 30, 20, 30));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Inisialisasi komponen
-        txtUsername = new JTextField(20);
-        txtPassword = new JPasswordField(20);
-        btnLogin = new JButton("Login");
-        btnRegister = new JButton("Sign Up");
-        lblError = new JLabel(" ");
-        lblError.setForeground(Color.RED);
-        lblError.setHorizontalAlignment(SwingConstants.CENTER);
-
-        // Judul "LOGIN"
-        JLabel lblTitle = new JLabel("LOGIN");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 28));
-        lblTitle.setForeground(COLOR_BLACK);
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        gbc.insets = new Insets(10, 8, 20, 8);
-        panel.add(lblTitle, gbc);
-
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.gridwidth = 1;
-
-        // Form fields
-        gbc.gridx = 0; gbc.gridy = 1; panel.add(new JLabel("Username:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 1; panel.add(txtUsername, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 2; panel.add(new JLabel("Password:"), gbc);
-        gbc.gridx = 1; gbc.gridy = 2; panel.add(txtPassword, gbc);
-
-        // Label Error
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
-        panel.add(lblError, gbc);
-
-        // Tombol Login (Utama)
-        btnLogin.setBackground(COLOR_TEAL);
-        btnLogin.setForeground(COLOR_BLACK);
-        btnLogin.setFont(new Font("Arial", Font.BOLD, 14));
-        btnLogin.setOpaque(true);
-        btnLogin.setBorderPainted(false);
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
-        gbc.insets = new Insets(15, 8, 8, 8);
-        panel.add(btnLogin, gbc);
-
-        // "I don't have an account"
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 1;
-        gbc.insets = new Insets(20, 8, 8, 8);
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        panel.add(new JLabel("I don't have an account"), gbc);
-
-        // Tombol Sign Up (Sekunder)
-        btnRegister.setBackground(COLOR_WHITE);
-        btnRegister.setForeground(Color.DARK_GRAY);
-        gbc.gridx = 1; gbc.gridy = 5;
-        gbc.insets = new Insets(20, 8, 8, 8);
-        gbc.anchor = GridBagConstraints.WEST;
-        panel.add(btnRegister, gbc);
-
-        return panel;
+    public LoginPanel() {
+        initComponents();
+    }
+    
+    public LoginPanel(InvenTrackApp mainApp) {
+        this(); // Panggil constructor default untuk init komponen visual
+        this.mainApp = mainApp;
+        this.controller = mainApp.getController();
+        
+        initCustomListeners();
     }
 
-    private void attachListeners() {
+    private void initCustomListeners() {
+        // Listener tombol Login
         btnLogin.addActionListener(this::handleLogin);
+        
+        // Listener Enter di password
         txtPassword.addActionListener(this::handleLogin);
-        btnRegister.addActionListener(e -> mainApp.showRegisterScreen());
+        
     }
 
     private void handleLogin(ActionEvent e) {
@@ -124,19 +52,132 @@ public class LoginPanel extends JPanel {
         String password = new String(txtPassword.getPassword());
 
         if (username.isEmpty() || password.isEmpty()) {
-            lblError.setText("Username dan Password wajib diisi.");
+            JOptionPane.showMessageDialog(this, 
+                "Username dan Password wajib diisi!", 
+                "Peringatan", 
+                JOptionPane.WARNING_MESSAGE);
             return;
         }
 
+        // Ubah kursor jadi loading
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Optional<Pengguna> loginResult = controller.login(username, password);
+        
+        // Proses login via controller
+        Optional<Pengguna> loginResult = Optional.empty();
+        if (controller != null) {
+            loginResult = controller.login(username, password);
+        } else {
+            System.err.println("Controller belum diinisialisasi!");
+        }
+        
         setCursor(Cursor.getDefaultCursor());
 
         if (loginResult.isPresent()) {
-            lblError.setText(" ");
-            mainApp.showDashboard(loginResult.get());
+            if (mainApp != null) {
+                mainApp.showDashboard(loginResult.get());
+            }
         } else {
-            lblError.setText("Login Gagal. Cek username/password.");
+            JOptionPane.showMessageDialog(this, 
+                "Login Gagal. Cek kembali username atau password Anda.", 
+                "Gagal Masuk", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jOptionPane2 = new javax.swing.JOptionPane();
+        brandingPanel1 = new com.anomaly.inventrack.ui.panels.BrandingPanel();
+        jPanel1 = new javax.swing.JPanel();
+        lblLogin = new javax.swing.JLabel();
+        lblUsername = new javax.swing.JLabel();
+        lblPassword = new javax.swing.JLabel();
+        txtUsername = new javax.swing.JTextField();
+        txtPassword = new javax.swing.JPasswordField();
+        btnLogin = new javax.swing.JButton();
+
+        setMaximumSize(new java.awt.Dimension(1000, 500));
+        setMinimumSize(new java.awt.Dimension(1000, 500));
+        setPreferredSize(new java.awt.Dimension(1000, 500));
+        setLayout(new java.awt.GridLayout());
+        add(brandingPanel1);
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        lblLogin.setFont(new java.awt.Font("Arial", 1, 28)); // NOI18N
+        lblLogin.setText("LOGIN");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 8, 40, 8);
+        jPanel1.add(lblLogin, gridBagConstraints);
+
+        lblUsername.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        lblUsername.setText("Username");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(15, 35, 15, 15);
+        jPanel1.add(lblUsername, gridBagConstraints);
+
+        lblPassword.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        lblPassword.setText("Password");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.insets = new java.awt.Insets(15, 35, 15, 15);
+        jPanel1.add(lblPassword, gridBagConstraints);
+
+        txtUsername.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        txtUsername.setToolTipText("");
+        txtUsername.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        txtUsername.setMinimumSize(new java.awt.Dimension(64, 22));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(15, 15, 15, 35);
+        jPanel1.add(txtUsername, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(15, 15, 15, 35);
+        jPanel1.add(txtPassword, gridBagConstraints);
+
+        btnLogin.setText("Login");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(25, 0, 25, 0);
+        jPanel1.add(btnLogin, gridBagConstraints);
+
+        add(jPanel1);
+    }// </editor-fold>//GEN-END:initComponents
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.anomaly.inventrack.ui.panels.BrandingPanel brandingPanel1;
+    private javax.swing.JButton btnLogin;
+    private javax.swing.JOptionPane jOptionPane2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblLogin;
+    private javax.swing.JLabel lblPassword;
+    private javax.swing.JLabel lblUsername;
+    private javax.swing.JPasswordField txtPassword;
+    private javax.swing.JTextField txtUsername;
+    // End of variables declaration//GEN-END:variables
 }

@@ -18,8 +18,6 @@ public class InvenTrackApp {
     private JFrame mainFrame;
     private InventrackController controller;
 
-    private final Dimension FIXED_WINDOW_SIZE = new Dimension(1100, 700);
-
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
