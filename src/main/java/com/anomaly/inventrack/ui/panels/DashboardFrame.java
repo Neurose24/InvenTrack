@@ -4,6 +4,8 @@
  */
 package com.anomaly.inventrack.ui.panels;
 
+import com.anomaly.inventrack.models.Pengguna;
+
 /**
  *
  * @author user
@@ -11,12 +13,27 @@ package com.anomaly.inventrack.ui.panels;
 public class DashboardFrame extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DashboardFrame.class.getName());
+    private Pengguna currentUser;
 
     /**
      * Creates new form DashboardFrame
      */
     public DashboardFrame() {
         initComponents();
+    }
+
+    public DashboardFrame(Pengguna pengguna) {
+        initComponents(); // 1. PENTING: Inisialisasi komponen GUI (tombol, label, dll)
+        
+        this.currentUser = pengguna; // 2. Simpan data pengguna ke variabel global
+        
+        if (this.currentUser != null) {
+            String nama = this.currentUser.getNamaPengguna();
+
+            // Panggil method 'Pintu Masuk' yang kita buat di Langkah 1 tadi
+            // sidebarPanel1 adalah nama variabel komponen yang Anda drag-drop tadi
+            sidebarPanel.setNamaUser(nama);
+        }
     }
 
     /**
@@ -28,34 +45,13 @@ public class DashboardFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        lblUserLog = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
+        sidebarPanel = new com.anomaly.inventrack.ui.panels.SidebarPanel();
+        dashboardPanel = new com.anomaly.inventrack.ui.panels.DashboardPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jPanel1.setBackground(new java.awt.Color(170, 204, 213));
-        jPanel1.setLayout(new java.awt.GridLayout(5, 1));
-
-        lblUserLog.setText("jLabel2");
-        jPanel1.add(lblUserLog);
-
-        getContentPane().add(jPanel1, java.awt.BorderLayout.LINE_START);
-
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 766, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 2500, Short.MAX_VALUE)
-        );
-
-        getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
+        setPreferredSize(new java.awt.Dimension(803, 500));
+        getContentPane().add(sidebarPanel, java.awt.BorderLayout.WEST);
+        getContentPane().add(dashboardPanel, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -86,8 +82,7 @@ public class DashboardFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JLabel lblUserLog;
+    private com.anomaly.inventrack.ui.panels.DashboardPanel dashboardPanel;
+    private com.anomaly.inventrack.ui.panels.SidebarPanel sidebarPanel;
     // End of variables declaration//GEN-END:variables
 }

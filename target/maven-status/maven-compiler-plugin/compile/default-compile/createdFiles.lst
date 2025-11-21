@@ -1,4 +1,5 @@
 com\anomaly\inventrack\models\Pengiriman$StatusPengiriman.class
+com\anomaly\inventrack\utils\PasswordUtil.class
 com\anomaly\inventrack\models\DetailPermintaan.class
 com\anomaly\inventrack\models\Gudang.class
 com\anomaly\inventrack\repositories\GudangRepositories.class
@@ -9,6 +10,7 @@ com\anomaly\inventrack\utils\DBUtil.class
 com\anomaly\inventrack\repositories\DetailPengirimanRepositories.class
 com\anomaly\inventrack\repositories\PengirimanRepositories.class
 com\anomaly\inventrack\models\Supir.class
+com\anomaly\inventrack\ui\panels\BrandingPanel.class
 com\anomaly\inventrack\models\DetailPengiriman$StatusPenerimaan.class
 com\anomaly\inventrack\services\MasterDataService.class
 com\anomaly\inventrack\repositories\DetailPermintaanRepositories.class
@@ -18,18 +20,19 @@ com\anomaly\inventrack\repositories\PenggunaRepositories.class
 com\anomaly\inventrack\models\Permintaan$StatusPermintaan.class
 com\anomaly\inventrack\models\Pengiriman.class
 com\anomaly\inventrack\utils\Config.class
+com\anomaly\inventrack\ui\panels\DashboardPanel.class
 com\anomaly\inventrack\repositories\PermintaanRepositories.class
 com\anomaly\inventrack\models\Pengguna.class
 com\anomaly\inventrack\controllers\InventrackController.class
 com\anomaly\inventrack\services\PengirimanService.class
 com\anomaly\inventrack\models\Permintaan.class
 com\anomaly\inventrack\utils\Database.class
+com\anomaly\inventrack\ui\panels\StokBarangPanel.class
 com\anomaly\inventrack\repositories\LogStokRepositories.class
 com\anomaly\inventrack\models\Stok.class
 com\anomaly\inventrack\services\exceptions\NotFoundException.class
 com\anomaly\inventrack\models\Barang.class
 com\anomaly\inventrack\services\PenggunaService.class
-com\anomaly\inventrack\ui\InvenTrackApp.class
 com\anomaly\inventrack\repositories\SupirRepositories.class
 com\anomaly\inventrack\models\LogStok$TipeTransaksi.class
 com\anomaly\inventrack\models\LogStok.class

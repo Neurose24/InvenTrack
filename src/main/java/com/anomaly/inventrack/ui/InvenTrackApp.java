@@ -2,26 +2,27 @@ package com.anomaly.inventrack.ui;
 
 import com.anomaly.inventrack.controllers.InventrackController;
 import com.anomaly.inventrack.models.Pengguna;
+// Pastikan import panel dan frame yang sesuai
 import com.anomaly.inventrack.ui.panels.LoginPanel;
-import com.anomaly.inventrack.ui.panels.DashboardPanel;
-import com.anomaly.inventrack.ui.panels.RegisterPanel;
+// Kita import DashboardFrame (Window terpisah), BUKAN DashboardPanel
+import com.anomaly.inventrack.ui.panels.DashboardFrame; 
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
  * Kelas Utama Aplikasi Swing.
- * Bertanggung jawab untuk membuat Controller, Frame, dan menukar Panel.
+ * Mengatur navigasi antar layar (Login <-> Register <-> Dashboard)
  */
 public class InvenTrackApp {
 
-    private JFrame mainFrame;
+    private JFrame mainFrame; // Frame untuk Login/Register
     private InventrackController controller;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                // Terapkan Look and Feel yang lebih baik (Nimbus)
+                // Terapkan Look and Feel Nimbus agar lebih modern
                 for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                     if ("Nimbus".equals(info.getName())) {
                         UIManager.setLookAndFeel(info.getClassName());
@@ -29,12 +30,12 @@ public class InvenTrackApp {
                     }
                 }
             } catch (Exception e) {
-                // Jika Nimbus tidak tersedia, gunakan default
+                // Abaikan jika gagal, pakai default
             }
             
             try {
                 InvenTrackApp app = new InvenTrackApp();
-                app.createAndShowGUI();
+                app.start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -45,45 +46,62 @@ public class InvenTrackApp {
         this.controller = new InventrackController();
     }
 
-    private void createAndShowGUI() {
-        mainFrame = new JFrame("Inventrack - Sistem Inventaris");
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setResizable(false); // Mencegah ukuran diubah
-
+    public void start() {
         showLoginScreen();
+    }
 
+    /**
+     * Menampilkan Layar Login.
+     * Jika frame belum ada (atau sudah didispose), buat baru.
+     */
+    public void showLoginScreen() {
+        // Cek apakah mainFrame perlu dibuat ulang (misal setelah logout)
+        if (mainFrame == null || !mainFrame.isDisplayable()) {
+            mainFrame = new JFrame("Inventrack - Login");
+            mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            mainFrame.setResizable(false); // Login tidak perlu di-resize
+        }
+
+        LoginPanel loginPanel = new LoginPanel(this);
+        mainFrame.setContentPane(loginPanel);
+        
+        mainFrame.pack(); // Sesuaikan ukuran frame dengan isi LoginPanel
+        mainFrame.setLocationRelativeTo(null); // Taruh di tengah layar
         mainFrame.setVisible(true);
     }
 
-    public void showLoginScreen() {
-        LoginPanel loginPanel = new LoginPanel(this);
-        mainFrame.setContentPane(loginPanel);
-        mainFrame.pack(); // Mengatur ukuran frame pas dengan LoginPanel
-        mainFrame.setLocationRelativeTo(null); // Posisikan di tengah
-        mainFrame.validate();
-    }
 
+
+    /**
+     * Menampilkan Dashboard.
+     * INI BAGIAN PENTING: Menutup Login Frame -> Membuka Dashboard Frame.
+     */
     public void showDashboard(Pengguna pengguna) {
-        DashboardPanel dashboardPanel = new DashboardPanel(this, pengguna);
-        mainFrame.setContentPane(dashboardPanel);
-        mainFrame.pack(); // Mengatur ukuran frame pas dengan DashboardPanel
-        mainFrame.setLocationRelativeTo(null);
-        mainFrame.validate();
-        mainFrame.repaint();
-    }
+        // 1. Tutup (Dispose) Frame Login/Register
+        if (mainFrame != null) {
+            mainFrame.dispose(); 
+            mainFrame = null; // Kosongkan referensi
+        }
 
-    public void showRegisterScreen() {
-        RegisterPanel registerPanel = new RegisterPanel(this);
-        mainFrame.setContentPane(registerPanel);
-        mainFrame.pack();
-        mainFrame.setLocationRelativeTo(null);
-        mainFrame.validate();
-        mainFrame.repaint();
+        // 2. Buat Frame Dashboard Baru (Layar Penuh)
+        // Pastikan kamu sudah membuat file DashboardFrame.java
+        DashboardFrame dashboard = new DashboardFrame(pengguna); 
         
-        registerPanel.loadGudangData();
+        // Opsi tambahan: Kirim referensi 'this' jika dashboard butuh akses logout
+        // DashboardFrame dashboard = new DashboardFrame(this, pengguna);
+        
+        dashboard.setVisible(true);
     }
     
-    // Memberikan akses Controller ke semua panel
+    /**
+     * Method untuk Logout (Dipanggil dari Dashboard).
+     * Menutup dashboard dan kembali ke Login.
+     */
+    public void logout(JFrame dashboardFrame) {
+        dashboardFrame.dispose(); // Tutup dashboard
+        showLoginScreen(); // Buka lagi login screen baru
+    }
+    
     public InventrackController getController() {
         return controller;
     }

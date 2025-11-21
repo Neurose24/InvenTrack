@@ -4,17 +4,52 @@
  */
 package com.anomaly.inventrack.ui.panels;
 
+import com.anomaly.inventrack.models.Pengguna;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import javax.swing.JPanel;
+
 /**
  *
  * @author user
  */
 public class SidebarPanel extends javax.swing.JPanel {
-
+    
+    private DashboardPanel panelUtama;
+      
     /**
      * Creates new form MenuPanel
      */
     public SidebarPanel() {
         initComponents();
+        hideAllSubmenus();
+    }
+    
+    public void setNamaUser(String nama) {
+        lblUsername.setText(nama); 
+    }
+    
+    
+    private void hideAllSubmenus() {
+        if (pnlSubMenuBarang != null) pnlSubMenuBarang.setVisible(false);
+        if (pnlSubMenuPermintaan != null) pnlSubMenuPermintaan.setVisible(false);
+ 
+        this.revalidate();
+        this.repaint();
+    }
+    
+    private void toggleSubmenu(JPanel subPanel) {
+        boolean isVisible = subPanel.isVisible();
+
+        // 1. Ubah status visibilitas
+        subPanel.setVisible(!isVisible);
+
+        this.revalidate(); 
+        this.repaint();
+    }
+    
+    public void setPanelUtama(DashboardPanel dp) {
+        this.panelUtama = dp;
     }
 
     /**
@@ -25,28 +60,185 @@ public class SidebarPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
+        pnlProfile = new javax.swing.JPanel();
+        icnInventrack = new javax.swing.JLabel();
+        lblUsername = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
+        pnlMenuContainer = new javax.swing.JPanel();
+        btnMenuBarang = new javax.swing.JButton();
+        pnlSubMenuBarang = new javax.swing.JPanel();
+        btnSubMenuStok = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        btnMenuPermintaan = new javax.swing.JButton();
+        pnlSubMenuPermintaan = new javax.swing.JPanel();
+        btnSubMenuPermintaan = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 265, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        setLayout(new java.awt.BorderLayout());
+
+        pnlProfile.setBackground(new java.awt.Color(170, 204, 213));
+        pnlProfile.setLayout(new java.awt.GridBagLayout());
+
+        icnInventrack.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/icon_inventrack.png"))); // NOI18N
+        icnInventrack.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        pnlProfile.add(icnInventrack, new java.awt.GridBagConstraints());
+
+        lblUsername.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        pnlProfile.add(lblUsername, gridBagConstraints);
+
+        add(pnlProfile, java.awt.BorderLayout.PAGE_START);
+
+        jScrollPane1.setBackground(new java.awt.Color(170, 204, 213));
+
+        pnlMenuContainer.setBackground(new java.awt.Color(170, 204, 213));
+        pnlMenuContainer.setLayout(new java.awt.GridBagLayout());
+
+        btnMenuBarang.setBackground(new java.awt.Color(170, 204, 213));
+        btnMenuBarang.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnMenuBarang.setText("Barang");
+        btnMenuBarang.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnMenuBarang.setContentAreaFilled(false);
+        btnMenuBarang.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        btnMenuBarang.addActionListener(this::btnMenuBarangActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
+        pnlMenuContainer.add(btnMenuBarang, gridBagConstraints);
+
+        pnlSubMenuBarang.setBackground(new java.awt.Color(170, 204, 213));
+        pnlSubMenuBarang.setLayout(new java.awt.GridBagLayout());
+
+        btnSubMenuStok.setBackground(new java.awt.Color(170, 204, 213));
+        btnSubMenuStok.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnSubMenuStok.setText("Stok");
+        btnSubMenuStok.setBorder(null);
+        btnSubMenuStok.setBorderPainted(false);
+        btnSubMenuStok.setContentAreaFilled(false);
+        btnSubMenuStok.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        btnSubMenuStok.addActionListener(this::btnSubMenuStokActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        pnlSubMenuBarang.add(btnSubMenuStok, gridBagConstraints);
+
+        jButton3.setBackground(new java.awt.Color(170, 204, 213));
+        jButton3.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jButton3.setText("SubMenu2");
+        jButton3.setBorder(null);
+        jButton3.setBorderPainted(false);
+        jButton3.setContentAreaFilled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        pnlSubMenuBarang.add(jButton3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        pnlMenuContainer.add(pnlSubMenuBarang, gridBagConstraints);
+
+        btnMenuPermintaan.setBackground(new java.awt.Color(170, 204, 213));
+        btnMenuPermintaan.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnMenuPermintaan.setText("Permintaan");
+        btnMenuPermintaan.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnMenuPermintaan.setContentAreaFilled(false);
+        btnMenuPermintaan.addActionListener(this::btnMenuPermintaanActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
+        pnlMenuContainer.add(btnMenuPermintaan, gridBagConstraints);
+
+        pnlSubMenuPermintaan.setBackground(new java.awt.Color(170, 204, 213));
+        pnlSubMenuPermintaan.setLayout(new java.awt.GridBagLayout());
+
+        btnSubMenuPermintaan.setBackground(new java.awt.Color(170, 204, 213));
+        btnSubMenuPermintaan.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnSubMenuPermintaan.setText("Daftar Permintaan");
+        btnSubMenuPermintaan.setBorder(null);
+        btnSubMenuPermintaan.setBorderPainted(false);
+        btnSubMenuPermintaan.setContentAreaFilled(false);
+        btnSubMenuPermintaan.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        pnlSubMenuPermintaan.add(btnSubMenuPermintaan, gridBagConstraints);
+
+        jButton4.setBackground(new java.awt.Color(170, 204, 213));
+        jButton4.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jButton4.setText("SubMenu2");
+        jButton4.setBorder(null);
+        jButton4.setBorderPainted(false);
+        jButton4.setContentAreaFilled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        pnlSubMenuPermintaan.add(jButton4, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        pnlMenuContainer.add(pnlSubMenuPermintaan, gridBagConstraints);
+
+        jScrollPane1.setViewportView(pnlMenuContainer);
+
+        add(jScrollPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnMenuBarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMenuBarangActionPerformed
+        toggleSubmenu(pnlSubMenuBarang);
+    }//GEN-LAST:event_btnMenuBarangActionPerformed
+
+    private void btnMenuPermintaanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMenuPermintaanActionPerformed
+        toggleSubmenu(pnlSubMenuPermintaan);
+    }//GEN-LAST:event_btnMenuPermintaanActionPerformed
+
+    private void btnSubMenuStokActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuStokActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardStok");
+        }
+    }//GEN-LAST:event_btnSubMenuStokActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMenuBarang;
+    private javax.swing.JButton btnMenuPermintaan;
+    private javax.swing.JButton btnSubMenuPermintaan;
+    private javax.swing.JButton btnSubMenuStok;
+    private javax.swing.JLabel icnInventrack;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblUsername;
+    private javax.swing.JPanel pnlMenuContainer;
+    private javax.swing.JPanel pnlProfile;
+    private javax.swing.JPanel pnlSubMenuBarang;
+    private javax.swing.JPanel pnlSubMenuPermintaan;
     // End of variables declaration//GEN-END:variables
 }
