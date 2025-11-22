@@ -16,6 +16,8 @@ import java.awt.Component;
 public class DashboardPanel extends javax.swing.JPanel {
     
     private StokBarangPanel pStok;
+    private DaftarPermintaanPanel pDaftarPermintaan;
+    private TambahBarangPanel pTambahBarang;
 
     /**
      * Creates new form DashboardPanel
@@ -25,12 +27,20 @@ public class DashboardPanel extends javax.swing.JPanel {
         setLayout(new CardLayout());
 
         // Inisialisasi panel-panel
-        pStok = new StokBarangPanel(); // <-- Tambahkan ini
+        pStok = new StokBarangPanel();
+        pDaftarPermintaan = new DaftarPermintaanPanel();
+        pTambahBarang = new TambahBarangPanel();
 
         // Tambahkan ke CardLayout
-        add(pStok, "cardStok"); // <-- Beri nama unik "cardStok"
+        add(pStok, "cardStok");
+        add(pDaftarPermintaan, "cardDaftarPermintaan");
+        add(pTambahBarang, "cardTambahBarang");
         
         // ...
+    }
+    
+    public void refreshDataTambahBarang() {
+        pTambahBarang.loadHelperData();
     }
     
     public void showForm(String cardName) {

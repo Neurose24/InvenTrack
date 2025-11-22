@@ -23,17 +23,14 @@ public class DashboardFrame extends javax.swing.JFrame {
     }
 
     public DashboardFrame(Pengguna pengguna) {
-        initComponents(); // 1. PENTING: Inisialisasi komponen GUI (tombol, label, dll)
+        initComponents();
         
-        this.currentUser = pengguna; // 2. Simpan data pengguna ke variabel global
+        this.currentUser = pengguna;
         
         if (this.currentUser != null) {
-            String nama = this.currentUser.getNamaPengguna();
-
-            // Panggil method 'Pintu Masuk' yang kita buat di Langkah 1 tadi
-            // sidebarPanel1 adalah nama variabel komponen yang Anda drag-drop tadi
-            sidebarPanel.setNamaUser(nama);
+            sidebarPanel.setNamaUser(this.currentUser); 
         }
+        sidebarPanel.setPanelUtama(dashboardPanel);
     }
 
     /**
@@ -50,6 +47,9 @@ public class DashboardFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(803, 500));
+
+        sidebarPanel.setMinimumSize(new java.awt.Dimension(170, 178));
+        sidebarPanel.setPreferredSize(new java.awt.Dimension(170, 246));
         getContentPane().add(sidebarPanel, java.awt.BorderLayout.WEST);
         getContentPane().add(dashboardPanel, java.awt.BorderLayout.CENTER);
 

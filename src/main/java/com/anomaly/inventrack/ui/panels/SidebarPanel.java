@@ -5,15 +5,20 @@
 package com.anomaly.inventrack.ui.panels;
 
 import com.anomaly.inventrack.models.Pengguna;
+import com.anomaly.inventrack.models.Gudang;
+import com.anomaly.inventrack.repositories.GudangRepositories;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
+import java.util.Optional;
 
 /**
  *
  * @author user
  */
 public class SidebarPanel extends javax.swing.JPanel {
+    
+    private static final int ID_GUDANG_UTAMA = 11011;
     
     private DashboardPanel panelUtama;
       
@@ -25,8 +30,26 @@ public class SidebarPanel extends javax.swing.JPanel {
         hideAllSubmenus();
     }
     
-    public void setNamaUser(String nama) {
-        lblUsername.setText(nama); 
+    public void setNamaUser(Pengguna pengguna) {
+        if (pengguna != null) {
+            lblUsername.setText(pengguna.getNamaPengguna());
+            
+            GudangRepositories gudangRepo = new GudangRepositories();
+            Optional<Gudang> optGudang = gudangRepo.findById(pengguna.getIdGudang());
+            
+            if (optGudang.isPresent()) {
+                lblNamaGudang.setText(optGudang.get().getNamaGudang());
+            } else {
+                lblNamaGudang.setText("Gudang Tidak Dikenal");
+            }
+            
+            boolean isAdminPusat = (pengguna.getIdGudang() == ID_GUDANG_UTAMA);
+
+            btnTambahBarang.setVisible(isAdminPusat);
+
+            pnlSubMenuBarang.revalidate();
+            pnlSubMenuBarang.repaint();
+        }
     }
     
     
@@ -65,16 +88,19 @@ public class SidebarPanel extends javax.swing.JPanel {
         pnlProfile = new javax.swing.JPanel();
         icnInventrack = new javax.swing.JLabel();
         lblUsername = new javax.swing.JLabel();
+        lblNamaGudang = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         pnlMenuContainer = new javax.swing.JPanel();
         btnMenuBarang = new javax.swing.JButton();
         pnlSubMenuBarang = new javax.swing.JPanel();
         btnSubMenuStok = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnTambahBarang = new javax.swing.JButton();
+        btnSubMenuEditStok = new javax.swing.JButton();
         btnMenuPermintaan = new javax.swing.JButton();
         pnlSubMenuPermintaan = new javax.swing.JPanel();
         btnSubMenuPermintaan = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -92,9 +118,17 @@ public class SidebarPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         pnlProfile.add(lblUsername, gridBagConstraints);
 
+        lblNamaGudang.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        pnlProfile.add(lblNamaGudang, gridBagConstraints);
+
         add(pnlProfile, java.awt.BorderLayout.PAGE_START);
 
         jScrollPane1.setBackground(new java.awt.Color(170, 204, 213));
+        jScrollPane1.setBorder(null);
 
         pnlMenuContainer.setBackground(new java.awt.Color(170, 204, 213));
         pnlMenuContainer.setLayout(new java.awt.GridBagLayout());
@@ -105,6 +139,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnMenuBarang.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         btnMenuBarang.setContentAreaFilled(false);
         btnMenuBarang.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        btnMenuBarang.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         btnMenuBarang.addActionListener(this::btnMenuBarangActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -125,28 +160,48 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnSubMenuStok.setBorderPainted(false);
         btnSubMenuStok.setContentAreaFilled(false);
         btnSubMenuStok.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        btnSubMenuStok.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         btnSubMenuStok.addActionListener(this::btnSubMenuStokActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         pnlSubMenuBarang.add(btnSubMenuStok, gridBagConstraints);
 
-        jButton3.setBackground(new java.awt.Color(170, 204, 213));
-        jButton3.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        jButton3.setText("SubMenu2");
-        jButton3.setBorder(null);
-        jButton3.setBorderPainted(false);
-        jButton3.setContentAreaFilled(false);
+        btnTambahBarang.setBackground(new java.awt.Color(170, 204, 213));
+        btnTambahBarang.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnTambahBarang.setText("Tambah Barang");
+        btnTambahBarang.setBorder(null);
+        btnTambahBarang.setBorderPainted(false);
+        btnTambahBarang.setContentAreaFilled(false);
+        btnTambahBarang.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnTambahBarang.addActionListener(this::btnTambahBarangActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
-        pnlSubMenuBarang.add(jButton3, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        pnlSubMenuBarang.add(btnTambahBarang, gridBagConstraints);
+
+        btnSubMenuEditStok.setBackground(new java.awt.Color(170, 204, 213));
+        btnSubMenuEditStok.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnSubMenuEditStok.setText("Edit Stok");
+        btnSubMenuEditStok.setBorder(null);
+        btnSubMenuEditStok.setBorderPainted(false);
+        btnSubMenuEditStok.setContentAreaFilled(false);
+        btnSubMenuEditStok.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        btnSubMenuEditStok.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuEditStok.addActionListener(this::btnSubMenuEditStokActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        pnlSubMenuBarang.add(btnSubMenuEditStok, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -159,6 +214,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnMenuPermintaan.setText("Permintaan");
         btnMenuPermintaan.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         btnMenuPermintaan.setContentAreaFilled(false);
+        btnMenuPermintaan.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         btnMenuPermintaan.addActionListener(this::btnMenuPermintaanActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -179,11 +235,13 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnSubMenuPermintaan.setBorderPainted(false);
         btnSubMenuPermintaan.setContentAreaFilled(false);
         btnSubMenuPermintaan.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        btnSubMenuPermintaan.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuPermintaan.addActionListener(this::btnSubMenuPermintaanActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         pnlSubMenuPermintaan.add(btnSubMenuPermintaan, gridBagConstraints);
 
         jButton4.setBackground(new java.awt.Color(170, 204, 213));
@@ -192,12 +250,13 @@ public class SidebarPanel extends javax.swing.JPanel {
         jButton4.setBorder(null);
         jButton4.setBorderPainted(false);
         jButton4.setContentAreaFilled(false);
+        jButton4.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         pnlSubMenuPermintaan.add(jButton4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -205,6 +264,16 @@ public class SidebarPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         pnlMenuContainer.add(pnlSubMenuPermintaan, gridBagConstraints);
+
+        jPanel1.setBackground(new java.awt.Color(170, 204, 213));
+        jPanel1.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 99;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        pnlMenuContainer.add(jPanel1, gridBagConstraints);
 
         jScrollPane1.setViewportView(pnlMenuContainer);
 
@@ -225,16 +294,36 @@ public class SidebarPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnSubMenuStokActionPerformed
 
+    private void btnSubMenuPermintaanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuPermintaanActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardDaftarPermintaan");
+        }
+    }//GEN-LAST:event_btnSubMenuPermintaanActionPerformed
+
+    private void btnTambahBarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahBarangActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardTambahBarang");
+        }
+    }//GEN-LAST:event_btnTambahBarangActionPerformed
+
+    private void btnSubMenuEditStokActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuEditStokActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSubMenuEditStokActionPerformed
+
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnMenuBarang;
     private javax.swing.JButton btnMenuPermintaan;
+    private javax.swing.JButton btnSubMenuEditStok;
     private javax.swing.JButton btnSubMenuPermintaan;
     private javax.swing.JButton btnSubMenuStok;
+    private javax.swing.JButton btnTambahBarang;
     private javax.swing.JLabel icnInventrack;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblNamaGudang;
     private javax.swing.JLabel lblUsername;
     private javax.swing.JPanel pnlMenuContainer;
     private javax.swing.JPanel pnlProfile;

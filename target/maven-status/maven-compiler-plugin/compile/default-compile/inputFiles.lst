@@ -29,11 +29,13 @@ C:\InvenTrack\src\main\java\com\anomaly\inventrack\services\PengirimanService.ja
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\services\PermintaanService.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\InvenTrackApp.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\BrandingPanel.java
+C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\DaftarPermintaanPanel.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\DashboardFrame.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\DashboardPanel.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\LoginPanel.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\SidebarPanel.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\StokBarangPanel.java
+C:\InvenTrack\src\main\java\com\anomaly\inventrack\ui\panels\TambahBarangPanel.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\utils\Config.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\utils\Database.java
 C:\InvenTrack\src\main\java\com\anomaly\inventrack\utils\DBUtil.java

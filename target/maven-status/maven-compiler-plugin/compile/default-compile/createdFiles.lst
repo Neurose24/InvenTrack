@@ -5,6 +5,7 @@ com\anomaly\inventrack\models\Gudang.class
 com\anomaly\inventrack\repositories\GudangRepositories.class
 com\anomaly\inventrack\models\DetailPengiriman.class
 com\anomaly\inventrack\models\LogStokDetail.class
+com\anomaly\inventrack\ui\panels\TambahBarangPanel.class
 com\anomaly\inventrack\repositories\StokRepositories.class
 com\anomaly\inventrack\utils\DBUtil.class
 com\anomaly\inventrack\repositories\DetailPengirimanRepositories.class
@@ -17,6 +18,7 @@ com\anomaly\inventrack\repositories\DetailPermintaanRepositories.class
 com\anomaly\inventrack\services\PermintaanService.class
 com\anomaly\inventrack\repositories\BarangRepositories.class
 com\anomaly\inventrack\repositories\PenggunaRepositories.class
+com\anomaly\inventrack\ui\panels\StokBarangPanel$5.class
 com\anomaly\inventrack\models\Permintaan$StatusPermintaan.class
 com\anomaly\inventrack\models\Pengiriman.class
 com\anomaly\inventrack\utils\Config.class
@@ -27,6 +29,7 @@ com\anomaly\inventrack\controllers\InventrackController.class
 com\anomaly\inventrack\services\PengirimanService.class
 com\anomaly\inventrack\models\Permintaan.class
 com\anomaly\inventrack\utils\Database.class
+com\anomaly\inventrack\ui\panels\StokBarangPanel$4.class
 com\anomaly\inventrack\ui\panels\StokBarangPanel.class
 com\anomaly\inventrack\repositories\LogStokRepositories.class
 com\anomaly\inventrack\models\Stok.class

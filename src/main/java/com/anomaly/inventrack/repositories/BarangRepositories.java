@@ -43,24 +43,25 @@ public class BarangRepositories {
     }
 
     public int save(Barang b) {
-        String sql = "INSERT INTO barang (nama_barang, kategori, satuan, deskripsi) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO barang (id_barang, nama_barang, kategori, satuan, deskripsi) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, b.getNamaBarang());
-            ps.setString(2, b.getKategori());
-            ps.setString(3, b.getSatuan());
-            ps.setString(4, b.getDeskripsi());
+            ps.setInt(1, b.getIdBarang());
+            ps.setString(2, b.getNamaBarang());
+            ps.setString(3, b.getKategori());
+            ps.setString(4, b.getSatuan());
+            ps.setString(5, b.getDeskripsi());
+            
             int affected = ps.executeUpdate();
-            if (affected == 0) {
-                throw new SQLException("Menyimpan barang gagal, tidak ada baris yang terpengaruh.");
-            }
-            try (ResultSet gk = ps.getGeneratedKeys()) {
-                if (gk.next()) {
-                    return gk.getInt(1);
-                }
+            
+            if (affected > 0) {
+                return b.getIdBarang();
             }
             return -1;
+            
+        } catch (java.sql.SQLIntegrityConstraintViolationException e) {
+            throw new RuntimeException("ID Barang " + b.getIdBarang() + " sudah terdaftar! Gunakan ID lain.", e);
         } catch (SQLException e) {
             throw new RuntimeException("Gagal menyimpan barang: " + e.getMessage(), e);
         }
