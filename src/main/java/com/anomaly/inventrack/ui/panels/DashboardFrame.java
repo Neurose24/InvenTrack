@@ -31,6 +31,8 @@ public class DashboardFrame extends javax.swing.JFrame {
             sidebarPanel.setNamaUser(this.currentUser); 
         }
         sidebarPanel.setPanelUtama(dashboardPanel);
+        
+        dashboardPanel.setLoggedInUser(this.currentUser);
     }
 
     /**

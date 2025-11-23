@@ -4,6 +4,7 @@
  */
 package com.anomaly.inventrack.ui.panels;
 
+import com.anomaly.inventrack.models.Pengguna;
 import java.awt.CardLayout;
 import java.awt.Component;
 
@@ -18,25 +19,43 @@ public class DashboardPanel extends javax.swing.JPanel {
     private StokBarangPanel pStok;
     private DaftarPermintaanPanel pDaftarPermintaan;
     private TambahBarangPanel pTambahBarang;
+    private EditStokPanel pEditStok;
 
     /**
      * Creates new form DashboardPanel
      */
     public DashboardPanel() {
         initComponents();
+        
+        //Nanti dihapus
+        if (java.beans.Beans.isDesignTime()) {
+            return;
+        }
+        
         setLayout(new CardLayout());
+        
 
         // Inisialisasi panel-panel
         pStok = new StokBarangPanel();
         pDaftarPermintaan = new DaftarPermintaanPanel();
         pTambahBarang = new TambahBarangPanel();
+        pEditStok = new EditStokPanel();
 
         // Tambahkan ke CardLayout
         add(pStok, "cardStok");
         add(pDaftarPermintaan, "cardDaftarPermintaan");
         add(pTambahBarang, "cardTambahBarang");
+        add(pEditStok, "cardEditStok");
+    }
+    
+    public void setLoggedInUser(Pengguna user) {
+        // Kirim ke EditStokPanel (pEditStok adalah nama variabel panel edit stok Anda)
+        if (pEditStok != null) {
+            pEditStok.setCurrentUser(user);
+        }
         
-        // ...
+        // Jika ada panel lain yang butuh user, kirim juga di sini
+        // if (pTambahBarang != null) pTambahBarang.setUser(user);
     }
     
     public void refreshDataTambahBarang() {

@@ -85,6 +85,21 @@ public class StokRepositories {
         } // PreparedStatement akan ditutup, Connection tetap terbuka
     }
 
+    public void updateStokMinimum(java.sql.Connection conn, int id_stok, int stokMinBaru) throws java.sql.SQLException {
+        String sql = "UPDATE stok SET stok_minimum = ? WHERE id_stok = ?";
+        // Gunakan koneksi yang sama (transaksi) atau buat baru jika conn null
+        boolean isInternalConn = (conn == null);
+        if (isInternalConn) conn = com.anomaly.inventrack.utils.Database.getConnection();
+        
+        try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, stokMinBaru);
+            ps.setInt(2, id_stok);
+            ps.executeUpdate();
+        } finally {
+            if (isInternalConn) conn.close();
+        }
+    }
+
     public void updateJumlahStok(Connection conn, int id_stok, int jumlah_stokBaru) throws SQLException {
     // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
     String sql = "UPDATE stok SET jumlah_stok = ?, tanggal_update = ? WHERE id_stok = ?";

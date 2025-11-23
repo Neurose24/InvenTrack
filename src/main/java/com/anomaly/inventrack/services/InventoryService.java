@@ -93,6 +93,40 @@ public class InventoryService {
         }
     }
 
+    public void tambahStokKontainer(int idBarang, int idGudang, int jumlah, String keterangan) {
+        Connection conn = null;
+        try {
+            conn = Database.getConnection();
+            conn.setAutoCommit(false); 
+            
+            // 1. Update Stok (Logika sama dengan tambah biasa)
+            Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudang);
+            if (optStok.isEmpty()) {
+                Stok newStok = new Stok(null, idGudang, idBarang, jumlah);
+                stokRepo.insert(conn, newStok);
+            } else {
+                Stok stok = optStok.get();
+                int jumlahBaru = stok.getJumlahStok() + jumlah;
+                stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru);
+            }
+
+            // 2. Catat Log Stok sebagai KONTAINER
+            LogStok log = new LogStok(
+                    null, idGudang, idBarang,
+                    LogStok.TipeTransaksi.KONTAINER, // <--- BEDA DISINI
+                    jumlah, LocalDateTime.now(), keterangan
+            );
+            logRepo.insert(conn, log);
+
+            conn.commit();
+        } catch (SQLException e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) {}
+            throw new BusinessException("Gagal input kontainer.", e);
+        } finally {
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException ex) {}
+        }
+    }
+
     // =========================================================
     // ============== 2. LOGIKA KURANGI STOK (TRANSACIONAL) ============
     // =========================================================

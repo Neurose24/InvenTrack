@@ -307,7 +307,9 @@ public class SidebarPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnTambahBarangActionPerformed
 
     private void btnSubMenuEditStokActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuEditStokActionPerformed
-        // TODO add your handling code here:
+        if (panelUtama != null) {
+            panelUtama.showForm("cardEditStok");
+        }
     }//GEN-LAST:event_btnSubMenuEditStokActionPerformed
 
     

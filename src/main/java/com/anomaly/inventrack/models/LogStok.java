@@ -13,6 +13,7 @@ public class LogStok implements Serializable {
     private String keterangan;
 
     public enum TipeTransaksi {
+        KONTAINER,
         MASUK,
         KELUAR,
         REKONSILIASI,
