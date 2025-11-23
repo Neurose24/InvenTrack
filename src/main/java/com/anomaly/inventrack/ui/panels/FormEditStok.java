@@ -27,9 +27,8 @@ public class FormEditStok extends javax.swing.JDialog {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FormEditStok.class.getName());
     
-    private final List<Integer> listIdStok;
+    private final List<Integer> listIdBarang; 
     private final int idGudangUser;
-    private static final int ID_GUDANG_UTAMA = 11011;
     
     private final StokRepositories stokRepo;
     private final BarangRepositories barangRepo;
@@ -41,11 +40,11 @@ public class FormEditStok extends javax.swing.JDialog {
     /**
      * Creates new form FormEditStok
      */
-    public FormEditStok(java.awt.Frame parent, boolean modal, List<Integer> listIdStok, int idGudangUser) {
+    public FormEditStok(java.awt.Frame parent, boolean modal, List<Integer> listIdBarang, int idGudangUser) {
         super(parent, modal);
         initComponents();
         
-        this.listIdStok = listIdStok;
+        this.listIdBarang = listIdBarang;
         this.idGudangUser = idGudangUser;
         
         this.stokRepo = new StokRepositories();
@@ -61,28 +60,22 @@ public class FormEditStok extends javax.swing.JDialog {
         setTitle("Form Transaksi & Edit Stok");
         setLocationRelativeTo(null);
         
-        // 1. Tampilkan Nama Gudang
         Optional<Gudang> optGudang = gudangRepo.findById(idGudangUser);
         if (optGudang.isPresent()) {
             lblNamaGudangUser.setText(optGudang.get().getNamaGudang());
             lblNamaGudangUser.setForeground(new Color(0, 102, 204));
         }
         
-        // 2. SETUP COMBOBOX (Menggunakan Enum LogStok)
-        // Kita gunakan DefaultComboBoxModel agar tipe datanya aman
         DefaultComboBoxModel<LogStok.TipeTransaksi> comboModel = new DefaultComboBoxModel<>();
-        
-        // Kita hanya masukkan tipe 'AKSI' yang boleh dipilih user manual
         comboModel.addElement(LogStok.TipeTransaksi.MASUK);
         comboModel.addElement(LogStok.TipeTransaksi.KELUAR);
-        comboModel.addElement(LogStok.TipeTransaksi.REKONSILIASI);
+        comboModel.addElement(LogStok.TipeTransaksi.REKONSILIASI); 
         
-        if (this.idGudangUser == ID_GUDANG_UTAMA) {
+        if (idGudangUser == 11011) {
             comboModel.addElement(LogStok.TipeTransaksi.KONTAINER);
         }
         
         cmbTipeTransaksi.setModel((javax.swing.ComboBoxModel) comboModel);
-        
         cmbTipeTransaksi.addActionListener(e -> updateTableHeader());
         
         // 3. Setup Tabel
@@ -108,13 +101,13 @@ public class FormEditStok extends javax.swing.JDialog {
             }
         };
         tblBarang.setModel(tableModel);
+
+        tblBarang.getColumnModel().removeColumn(tblBarang.getColumnModel().getColumn(0)); 
         
-        tblBarang.getColumnModel().removeColumn(tblBarang.getColumnModel().getColumn(0));
+        tblBarang.getColumnModel().getColumn(0).setPreferredWidth(50);  
+        tblBarang.getColumnModel().getColumn(1).setPreferredWidth(200); 
         
-        tblBarang.getColumnModel().getColumn(0).setPreferredWidth(50);
-        tblBarang.getColumnModel().getColumn(1).setPreferredWidth(200);
-        
-        updateTableHeader();
+        updateTableHeader(); 
     }
     
     private void updateTableHeader() {
@@ -124,8 +117,9 @@ public class FormEditStok extends javax.swing.JDialog {
         if (tipe == LogStok.TipeTransaksi.MASUK) judulKolomInput = "Tambah (+)";
         else if (tipe == LogStok.TipeTransaksi.KELUAR) judulKolomInput = "Kurang (-)";
         else if (tipe == LogStok.TipeTransaksi.REKONSILIASI) judulKolomInput = "Stok Fisik (Baru)";
-        else if (tipe == LogStok.TipeTransaksi.KONTAINER) judulKolomInput = "Jml Import (+)"; // <--- Judul Kolom
+        else if (tipe == LogStok.TipeTransaksi.KONTAINER) judulKolomInput = "Jml Import (+)";
         
+        // Update header kolom view index 5 (Model index 6)
         tblBarang.getColumnModel().getColumn(5).setHeaderValue(judulKolomInput);
         tblBarang.getTableHeader().repaint();
     }
@@ -133,30 +127,35 @@ public class FormEditStok extends javax.swing.JDialog {
     private void loadData() {
         tableModel.setRowCount(0);
         
-        for (Integer idStok : listIdStok) {
-            Optional<Stok> optStok = stokRepo.getById(idStok);
+        for (Integer idBarang : listIdBarang) {
+            Optional<Barang> optBarang = barangRepo.findById(idBarang);
+            if (optBarang.isEmpty()) continue;
+            
+            Barang b = optBarang.get();
+            
+            Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudangUser);
+            
+            int idStok = -1;
+            int stokMin = 0;
+            int stokSaatIni = 0;
+            
             if (optStok.isPresent()) {
                 Stok s = optStok.get();
-                
-                String namaBarang = "Unknown";
-                String kategori = "-";
-                
-                Optional<Barang> optBarang = barangRepo.findById(s.getIdBarang());
-                if (optBarang.isPresent()) {
-                    namaBarang = optBarang.get().getNamaBarang();
-                    kategori = optBarang.get().getKategori();
-                }
-                
-                tableModel.addRow(new Object[]{
-                    s.getIdStok(),
-                    s.getIdBarang(),
-                    namaBarang,
-                    kategori,
-                    s.getStokMinimum(),
-                    s.getJumlahStok(),
-                    0
-                });
+                idStok = s.getIdStok();
+                stokMin = s.getStokMinimum();
+                stokSaatIni = s.getJumlahStok();
             }
+            
+            // 3. Masukkan ke Tabel
+            tableModel.addRow(new Object[]{
+                idStok,
+                b.getIdBarang(),
+                b.getNamaBarang(),
+                b.getKategori(),
+                stokMin,
+                stokSaatIni,
+                0
+            });
         }
     }
     
@@ -170,7 +169,7 @@ public class FormEditStok extends javax.swing.JDialog {
         if (keterangan.isEmpty()) keterangan = "Edit Stok Manual";
         
         int confirm = JOptionPane.showConfirmDialog(this, 
-                "Simpan transaksi " + tipe + " ini?", 
+                "Simpan transaksi untuk " + tableModel.getRowCount() + " barang?", 
                 "Konfirmasi", JOptionPane.YES_NO_OPTION);
         
         if (confirm == JOptionPane.YES_OPTION) {
@@ -181,29 +180,37 @@ public class FormEditStok extends javax.swing.JDialog {
                     int stokMinInput = (int) tableModel.getValueAt(i, 4);
                     int jumlahInput = (int) tableModel.getValueAt(i, 6); 
                     
-                    // 1. Update Stok Minimum
-                    Optional<Stok> sAsli = stokRepo.getById(idStok);
-                    if (sAsli.isPresent() && sAsli.get().getStokMinimum() != stokMinInput) {
-                        stokRepo.updateStokMinimum(null, idStok, stokMinInput);
+                    if (idStok != -1) {
+                        Optional<Stok> sAsli = stokRepo.getById(idStok);
+                        if (sAsli.isPresent() && sAsli.get().getStokMinimum() != stokMinInput) {
+                            stokRepo.updateStokMinimum(null, idStok, stokMinInput);
+                        }
                     }
                     
                     if (jumlahInput > 0 || tipe == LogStok.TipeTransaksi.REKONSILIASI) {
                         
-                        if (tipe == LogStok.TipeTransaksi.MASUK) {
-                            inventoryService.tambahStok(idBarang, idGudangUser, jumlahInput, keterangan);
-                        } 
-                        else if (tipe == LogStok.TipeTransaksi.KONTAINER) {
-                            inventoryService.tambahStokKontainer(idBarang, idGudangUser, jumlahInput, keterangan);
-                        }
-                        else if (tipe == LogStok.TipeTransaksi.KELUAR) {
+                        if (tipe == LogStok.TipeTransaksi.KELUAR) {
                             int stokSaatIni = (int) tableModel.getValueAt(i, 5);
                             if (jumlahInput > stokSaatIni) {
                                 throw new Exception("Stok tidak cukup untuk ID Barang: " + idBarang);
                             }
                             inventoryService.kurangiStok(idBarang, idGudangUser, jumlahInput, keterangan);
                         } 
+                        else if (tipe == LogStok.TipeTransaksi.MASUK) {
+                            inventoryService.tambahStok(idBarang, idGudangUser, jumlahInput, keterangan);
+                        }
+                        else if (tipe == LogStok.TipeTransaksi.KONTAINER) {
+                            inventoryService.tambahStokKontainer(idBarang, idGudangUser, jumlahInput, keterangan);
+                        }
                         else if (tipe == LogStok.TipeTransaksi.REKONSILIASI) {
                             inventoryService.rekonsiliasiStok(idBarang, idGudangUser, jumlahInput, keterangan);
+                        }
+
+                        if (idStok == -1) {
+                            Optional<Stok> stokBaru = stokRepo.findByBarangAndGudang(idBarang, idGudangUser);
+                            if (stokBaru.isPresent()) {
+                                stokRepo.updateStokMinimum(null, stokBaru.get().getIdStok(), stokMinInput);
+                            }
                         }
                     }
                 }

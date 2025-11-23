@@ -160,43 +160,62 @@ public class StokBarangPanel extends javax.swing.JPanel {
         
         String keyword = txtCariBarang.getText().toLowerCase(); 
 
-        List<Stok> listStok;
+        List<Stok> listStokDb;
         if (idGudangPilih == -1) {
-            listStok = stokRepo.getAll(); 
+            listStokDb = stokRepo.getAll(); 
         } else {
-            listStok = stokRepo.getByGudang(idGudangPilih); 
+            listStokDb = stokRepo.getByGudang(idGudangPilih); 
+        }
+        
+        // Buat Map Cepat untuk Pencarian Stok: Map<IdBarang, Stok>
+        // Ini agar kita tidak perlu looping listStokDb berkali-kali di dalam loop barang
+        Map<Integer, Stok> mapStokCepat = new HashMap<>();
+        for (Stok s : listStokDb) {
+            // Jika filter semua gudang, kita harus hati-hati agar tidak duplikat ID Barang
+            // Tapi untuk tampilan sederhana, jika idGudangPilih -1 (Semua), 
+            // logika ini akan menampilkan baris per gudang (jika kita loop listStokDb).
+            
+            // TAPI, karena kita ingin menampilkan SEMUA BARANG (termasuk yang 0),
+            // Kita akan loop Barang. 
+            // KHUSUS Filter Per Gudang (idGudangPilih != -1), logika ini bekerja sempurna.
+            mapStokCepat.put(s.getIdBarang(), s);
         }
 
-        for (Stok s : listStok) {
-            Barang b = mapBarang.get(s.getIdBarang());
-            String namaGudang = mapNamaGudang.getOrDefault(s.getIdGudang(), "Unknown");
+        for (Barang b : mapBarang.values()) {
             
-            String namaBarang = (b != null) ? b.getNamaBarang() : "Unknown";
-            String kategori = (b != null) ? b.getKategori() : "-";
-            String satuan = (b != null) ? b.getSatuan() : "-";
+            Stok sFound = mapStokCepat.get(b.getIdBarang());
             
-            String idBarangStr = String.valueOf(s.getIdBarang());
+            int idStok      = (sFound != null) ? sFound.getIdStok() : -1;
+            int jumlah      = (sFound != null) ? sFound.getJumlahStok() : 0;
+            String lokasi   = (sFound != null) ? mapNamaGudang.getOrDefault(sFound.getIdGudang(), "Unknown") : "-";
             
-            boolean matchKategori = selectedKategori.equals("Semua Kategori") || 
-                                    kategori.equalsIgnoreCase(selectedKategori);
+            if (idGudangPilih != -1 && sFound == null) {
+                lokasi = mapNamaGudang.getOrDefault(idGudangPilih, "Gudang Terpilih");
+            }
             
-            boolean matchSatuan = selectedSatuan.equals("Semua Satuan") || 
-                                    satuan.equalsIgnoreCase(selectedSatuan);
-
-            boolean matchKeyword = keyword.isEmpty() || 
-                                   idBarangStr.contains(keyword) ||
-                                   namaBarang.toLowerCase().contains(keyword) ||
-                                   kategori.toLowerCase().contains(keyword) ||
-                                   satuan.toLowerCase().contains(keyword);
+            
+            // --- FILTERING LOGIC ---
+            String namaBarang = b.getNamaBarang();
+            String kategori   = (b.getKategori() != null) ? b.getKategori() : "-";
+            String satuan     = (b.getSatuan() != null) ? b.getSatuan() : "-";
+            String idBarangStr = String.valueOf(b.getIdBarang());
+            
+            boolean matchKategori = selectedKategori.equals("Semua Kategori") || kategori.equalsIgnoreCase(selectedKategori);
+            boolean matchSatuan   = selectedSatuan.equals("Semua Satuan") || satuan.equalsIgnoreCase(selectedSatuan);
+            boolean matchKeyword  = keyword.isEmpty() || 
+                                    idBarangStr.contains(keyword) ||
+                                    namaBarang.toLowerCase().contains(keyword) ||
+                                    kategori.toLowerCase().contains(keyword) ||
+                                    satuan.toLowerCase().contains(keyword);
 
             if (matchKategori && matchKeyword && matchSatuan) {
                 tableModel.addRow(new Object[]{
-                    s.getIdStok(),
-                    s.getIdBarang(),
+                    idStok,
+                    b.getIdBarang(),
                     namaBarang,
                     kategori,
-                    namaGudang,
-                    s.getJumlahStok(),
+                    lokasi,
+                    jumlah,
                     satuan
                 });
             }

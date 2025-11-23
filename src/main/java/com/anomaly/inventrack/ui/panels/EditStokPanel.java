@@ -122,22 +122,21 @@ public class EditStokPanel extends javax.swing.JPanel {
     }
     
     private void bukaWindowEdit() {
-        List<Integer> selectedIds = new ArrayList<>();
+        List<Integer> selectedIdBarang = new ArrayList<>();
         
         for (int i = 0; i < tblBarang.getRowCount(); i++) {
-            Boolean isChecked = (Boolean) tableModel.getValueAt(i, 0);
+            Boolean isChecked = (Boolean) tableModel.getValueAt(i, 0); 
             
             if (isChecked != null && isChecked) {
-                int idStok = (int) tableModel.getValueAt(i, 1);
-                selectedIds.add(idStok);
+                int idBarang = (int) tableModel.getValueAt(i, 2); 
+                selectedIdBarang.add(idBarang);
             }
         }
         
-        if (!selectedIds.isEmpty()) {
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if (!selectedIdBarang.isEmpty()) {
+            javax.swing.JFrame parentFrame = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
             
-            // UPDATE BARIS INI: Kirim ID Gudang User
-            FormEditStok dialog = new FormEditStok(parentFrame, true, selectedIds, currentUserGudangId);
+            FormEditStok dialog = new FormEditStok(parentFrame, true, selectedIdBarang, currentUserGudangId);
             
             dialog.setVisible(true);
             loadDataStok();
@@ -158,33 +157,52 @@ public class EditStokPanel extends javax.swing.JPanel {
         
         String keyword = txtCariBarang.getText().toLowerCase(); 
 
-        List<Stok> listStok = stokRepo.getByGudang(currentUserGudangId); 
+        List<Stok> listStokDb = stokRepo.getByGudang(currentUserGudangId);
+        
+        Map<Integer, Stok> mapStokCepat = new HashMap<>();
+        for (Stok s : listStokDb) {
+            mapStokCepat.put(s.getIdBarang(), s);
+        }
 
-        for (Stok s : listStok) {
-            Barang b = mapBarang.get(s.getIdBarang());
+        for (Barang b : mapBarang.values()) {
             
-            String namaBarang = (b != null) ? b.getNamaBarang() : "Unknown";
-            String kategori = (b != null) ? b.getKategori() : "-";
-            String satuan = (b != null) ? b.getSatuan() : "-";
-            String idBarangStr = String.valueOf(s.getIdBarang());
+            Stok s = mapStokCepat.get(b.getIdBarang());
             
-            boolean matchKategori = selectedKategori.equals("Semua Kategori") || kategori.equalsIgnoreCase(selectedKategori);
-            boolean matchSatuan = selectedSatuan.equals("Semua Satuan") || satuan.equalsIgnoreCase(selectedSatuan);
-            boolean matchKeyword = keyword.isEmpty() || idBarangStr.contains(keyword) || namaBarang.toLowerCase().contains(keyword);
+            int idStok      = (s != null) ? s.getIdStok() : -1;
+            int jumlah      = (s != null) ? s.getJumlahStok() : 0;
+            
+            String namaBarang = b.getNamaBarang();
+            String kategori   = (b.getKategori() != null) ? b.getKategori() : "-";
+            String satuan     = (b.getSatuan() != null) ? b.getSatuan() : "-";
+            String idBarangStr = String.valueOf(b.getIdBarang());
+            
+            boolean matchKategori = selectedKategori.equals("Semua Kategori") || 
+                                    kategori.equalsIgnoreCase(selectedKategori);
+            
+            boolean matchSatuan   = selectedSatuan.equals("Semua Satuan") || 
+                                    satuan.equalsIgnoreCase(selectedSatuan);
 
+            boolean matchKeyword  = keyword.isEmpty() || 
+                                    idBarangStr.contains(keyword) ||
+                                    namaBarang.toLowerCase().contains(keyword) ||
+                                    kategori.toLowerCase().contains(keyword) ||
+                                    satuan.toLowerCase().contains(keyword);
+
+            // 7. Masukkan ke Tabel
             if (matchKategori && matchKeyword && matchSatuan) {
                 tableModel.addRow(new Object[]{
                     false,
-                    s.getIdStok(),
-                    s.getIdBarang(),
+                    idStok,
+                    b.getIdBarang(),
                     namaBarang,
                     kategori,
-                    s.getJumlahStok(),
+                    jumlah,
                     satuan
                 });
             }
         }
-
+        
+        // Reset tombol edit
         btnEditStok.setVisible(false);
     }
     
