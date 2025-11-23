@@ -3,7 +3,6 @@ com\anomaly\inventrack\utils\PasswordUtil.class
 com\anomaly\inventrack\models\DetailPermintaan.class
 com\anomaly\inventrack\ui\panels\EditStokPanel$2.class
 com\anomaly\inventrack\ui\panels\StokBarangPanel$3.class
-com\anomaly\inventrack\ui\panels\EditStokPanel$ComboItem.class
 com\anomaly\inventrack\models\Gudang.class
 com\anomaly\inventrack\ui\panels\FormEditStok$1.class
 com\anomaly\inventrack\repositories\GudangRepositories.class

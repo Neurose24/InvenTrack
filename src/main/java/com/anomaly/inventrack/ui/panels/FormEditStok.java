@@ -114,9 +114,6 @@ public class FormEditStok extends javax.swing.JDialog {
         tblBarang.getColumnModel().getColumn(0).setPreferredWidth(50);
         tblBarang.getColumnModel().getColumn(1).setPreferredWidth(200);
         
-        btnSimpan.addActionListener(e -> prosesSimpan());
-        btnBatal.addActionListener(e -> dispose());
-        
         updateTableHeader();
     }
     
@@ -188,24 +185,6 @@ public class FormEditStok extends javax.swing.JDialog {
                     Optional<Stok> sAsli = stokRepo.getById(idStok);
                     if (sAsli.isPresent() && sAsli.get().getStokMinimum() != stokMinInput) {
                         stokRepo.updateStokMinimum(null, idStok, stokMinInput);
-                    }
-                    
-                    // 2. Proses Transaksi
-                    if (jumlahInput > 0 || tipe == LogStok.TipeTransaksi.REKONSILIASI) {
-                        
-                        if (tipe == LogStok.TipeTransaksi.KELUAR) {
-                            int stokSaatIni = (int) tableModel.getValueAt(i, 5);
-                            if (jumlahInput > stokSaatIni) {
-                                throw new Exception("Stok tidak cukup untuk ID Barang: " + idBarang);
-                            }
-                            inventoryService.kurangiStok(idBarang, idGudangUser, jumlahInput, keterangan);
-                        } 
-                        else if (tipe == LogStok.TipeTransaksi.MASUK) {
-                            inventoryService.tambahStok(idBarang, idGudangUser, jumlahInput, keterangan);
-                        } 
-                        else if (tipe == LogStok.TipeTransaksi.REKONSILIASI) {
-                            inventoryService.rekonsiliasiStok(idBarang, idGudangUser, jumlahInput, keterangan);
-                        }
                     }
                     
                     if (jumlahInput > 0 || tipe == LogStok.TipeTransaksi.REKONSILIASI) {
@@ -352,6 +331,7 @@ public class FormEditStok extends javax.swing.JDialog {
         pnlLogStok.add(jScrollPane2, gridBagConstraints);
 
         btnSimpan.setText("Simpan");
+        btnSimpan.addActionListener(this::btnSimpanActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -360,6 +340,7 @@ public class FormEditStok extends javax.swing.JDialog {
         pnlLogStok.add(btnSimpan, gridBagConstraints);
 
         btnBatal.setText("Batal");
+        btnBatal.addActionListener(this::btnBatalActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
@@ -373,6 +354,14 @@ public class FormEditStok extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        prosesSimpan();
+    }//GEN-LAST:event_btnSimpanActionPerformed
+
+    private void btnBatalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBatalActionPerformed
+        dispose();
+    }//GEN-LAST:event_btnBatalActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
