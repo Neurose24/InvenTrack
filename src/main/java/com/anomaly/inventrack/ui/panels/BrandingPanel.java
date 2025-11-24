@@ -29,16 +29,14 @@ public class BrandingPanel extends javax.swing.JPanel {
     }
     
     private void initCustomStyle() {
-        // Set warna background panel
         setBackground(COLOR_TEAL); 
         
-        // --- Logika Logo (dari kode aslimu) ---
         try {
             java.net.URL logoURL = getClass().getResource("/img/logo_inventrack.png");
             if (logoURL != null) {
                 ImageIcon logoIcon = new ImageIcon(logoURL);
                 lblLogo.setIcon(logoIcon);
-                lblLogo.setText(""); // Hapus teks jika gambar ada
+                lblLogo.setText("");
             } else {
                 lblLogo.setText("LOGO");
                 lblLogo.setFont(new Font("Arial", Font.BOLD, 48));

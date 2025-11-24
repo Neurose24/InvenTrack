@@ -22,6 +22,8 @@ public class DashboardPanel extends javax.swing.JPanel {
     private EditStokPanel pEditStok;
     private BuatPermintaanPanel pBuatPermintaan;
     private DaftarPengirimanPanel pDaftarPengiriman;
+    private LogStokPanel pLogStok;
+    private BuatPengirimanPanel pBuatPengiriman;
 
     /**
      * Creates new form DashboardPanel
@@ -29,42 +31,32 @@ public class DashboardPanel extends javax.swing.JPanel {
     public DashboardPanel() {
         initComponents();
         
-        //Nanti dihapus
-        if (java.beans.Beans.isDesignTime()) {
-            return;
-        }
-        
         setLayout(new CardLayout());
         
-
-        // Inisialisasi panel-panel
         pStok = new StokBarangPanel();
         pDaftarPermintaan = new DaftarPermintaanPanel();
         pTambahBarang = new TambahBarangPanel();
         pEditStok = new EditStokPanel();
         pBuatPermintaan = new BuatPermintaanPanel();
         pDaftarPengiriman = new DaftarPengirimanPanel();
+        pLogStok = new LogStokPanel();
+        pBuatPengiriman = new BuatPengirimanPanel();
 
-        // Tambahkan ke CardLayout
         add(pStok, "cardStok");
         add(pDaftarPermintaan, "cardDaftarPermintaan");
         add(pTambahBarang, "cardTambahBarang");
         add(pEditStok, "cardEditStok");
         add(pBuatPermintaan, "cardBuatPermintaan");
         add(pDaftarPengiriman, "cardDaftarPengiriman");
+        add(pLogStok, "cardLogStok");
+        add(pBuatPengiriman, "cardBuatPengiriman");
     }
     
     public void setLoggedInUser(Pengguna user) {
-        // Kirim ke EditStokPanel (pEditStok adalah nama variabel panel edit stok Anda)
         if (pEditStok != null) {
             pEditStok.setCurrentUser(user);
         }
-        
-        // Jika ada panel lain yang butuh user, kirim juga di sini
-        // if (pTambahBarang != null) {
-            // pTambahBarang.setCurrentUser(user);
-        // }
-        
+ 
         if (pDaftarPermintaan != null) {
             pDaftarPermintaan.setCurrentUser(user);
         }
@@ -75,6 +67,14 @@ public class DashboardPanel extends javax.swing.JPanel {
         
         if (pDaftarPengiriman != null) {
             pDaftarPengiriman.setCurrentUser(user);
+        }
+        
+        if (pLogStok != null) {
+            pLogStok.setCurrentUser(user);
+        }
+        
+        if (pBuatPengiriman != null) {
+            pBuatPengiriman.setCurrentUser(user);
         }
     }
     

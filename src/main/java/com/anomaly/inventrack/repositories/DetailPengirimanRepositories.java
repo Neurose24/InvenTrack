@@ -19,13 +19,25 @@ public class DetailPengirimanRepositories {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+                String statusStr = rs.getString("status_penerimaan");
+                DetailPengiriman.StatusPenerimaan statusEnum = DetailPengiriman.StatusPenerimaan.BELUM_DITERIMA;
+                
+                if (statusStr != null) {
+                    String statusNormalized = statusStr.replace(" ", "_");
+                    try {
+                        statusEnum = DetailPengiriman.StatusPenerimaan.valueOf(statusNormalized);
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Status DB tidak dikenal Java: " + statusStr);
+                    }
+                }
+
                 DetailPengiriman dp = new DetailPengiriman(
                         rs.getInt("id_detail_pengiriman"),
                         rs.getInt("id_pengiriman"),
                         rs.getInt("id_barang"),
                         rs.getInt("jumlah_dikirim"),
                         rs.getInt("jumlah_diterima"),
-                        rs.getObject("status_penerimaan", DetailPengiriman.StatusPenerimaan.class),
+                        statusEnum,
                         rs.getString("catatan_penerimaan")
                 );
                 list.add(dp);
@@ -45,6 +57,7 @@ public class DetailPengirimanRepositories {
             ps.setInt(2, detailPengiriman.getIdBarang());
             ps.setInt(3, detailPengiriman.getJumlahDikirim());
             ps.setInt(4, detailPengiriman.getJumlahDiterima());
+            
             String statusStr = detailPengiriman.getStatusPenerimaan().name(); 
             if (statusStr.equals("BELUM_DITERIMA")) {
                 statusStr = "BELUM DITERIMA"; 
@@ -54,7 +67,6 @@ public class DetailPengirimanRepositories {
 
             ps.executeUpdate();
 
-            // Opsional: set generated key ke objek DetailPengiriman
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     detailPengiriman.setIdDetailPengiriman(generatedKeys.getInt(1));
@@ -64,10 +76,14 @@ public class DetailPengirimanRepositories {
     }
 
     public void updatePenerimaan(Connection conn, int id_detail_pengiriman, int jumlah_diterima, DetailPengiriman.StatusPenerimaan status, String catatan) throws SQLException {
-    String sql = "UPDATE detail_pengiriman SET jumlah_diterima = ?, status_penerimaan = ?, catatan_penerimaan = ? WHERE id_detail_pengiriman = ?";
+        String sql = "UPDATE detail_pengiriman SET jumlah_diterima = ?, status_penerimaan = ?, catatan_penerimaan = ? WHERE id_detail_pengiriman = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, jumlah_diterima);
-            ps.setObject(2, status.toString()); 
+            String statusStr = status.name();
+            if (statusStr.equals("BELUM_DITERIMA")) {
+                statusStr = "BELUM DITERIMA";
+            }
+            ps.setString(2, statusStr); 
             ps.setString(3, catatan);
             ps.setInt(4, id_detail_pengiriman);
             ps.executeUpdate();

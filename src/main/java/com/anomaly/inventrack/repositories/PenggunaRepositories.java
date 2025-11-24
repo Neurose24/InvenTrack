@@ -10,15 +10,15 @@ import java.util.Optional;
 
 public class PenggunaRepositories {
 
-    public Optional<Pengguna> findByUsername(String username) { // <-- Return type diubah
+    public Optional<Pengguna> findByUsername(String username) {
         String sql = "SELECT * FROM pengguna WHERE username = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, username);
-            try (ResultSet rs = ps.executeQuery()) { // <-- Gunakan try-with-resources untuk ResultSet
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(new Pengguna( // <-- Gunakan Optional.of()
+                    return Optional.of(new Pengguna(
                         rs.getInt("id_pengguna"),
                         rs.getString("nama_pengguna"),
                         rs.getString("username"),
@@ -28,10 +28,9 @@ public class PenggunaRepositories {
                 }
             }
         } catch (SQLException e) {
-            // Lempar RuntimeException agar Service bisa menangkapnya
             throw new RuntimeException("Gagal mencari pengguna berdasarkan username: " + e.getMessage(), e); 
         }
-        return Optional.empty(); // <-- Kembalikan Optional kosong jika tidak ditemukan
+        return Optional.empty();
     }
 
     public Optional<Pengguna> findById(int id_pengguna) {
@@ -97,7 +96,7 @@ public class PenggunaRepositories {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // atau lempar exception sesuai kebutuhan
+        return -1;
     }
 
     public Pengguna saveUser(Pengguna pengguna) {
@@ -122,7 +121,6 @@ public class PenggunaRepositories {
             }
             return pengguna;
         } catch (SQLException e) {
-            // Lempar RuntimeException agar service tahu
             throw new RuntimeException("Gagal menyimpan pengguna baru: " + e.getMessage(), e);
         }
     }

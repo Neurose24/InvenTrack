@@ -4,7 +4,6 @@ import com.anomaly.inventrack.models.Permintaan;
 import com.anomaly.inventrack.utils.Database;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +12,6 @@ public class PermintaanRepositories {
 
     public List<Permintaan> findAll() {
         List<Permintaan> list = new ArrayList<>();
-        // Pastikan nama kolom sesuai dengan database Anda (snake_case)
         String sql = "SELECT * FROM permintaan";
 
         try (Connection conn = Database.getConnection();
@@ -21,11 +19,10 @@ public class PermintaanRepositories {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                list.add(mapResultSetToPermintaan(rs)); // Gunakan helper method
+                list.add(mapResultSetToPermintaan(rs));
             }
 
         } catch (SQLException e) {
-            // Sebaiknya throw RuntimeException agar tidak silent failure
             throw new RuntimeException("Gagal load semua permintaan: " + e.getMessage(), e);
         }
         return list;
@@ -50,14 +47,12 @@ public class PermintaanRepositories {
     }
 
     public void insert(Connection conn, Permintaan permintaan) throws SQLException {
-        // PERBAIKAN: Tambahkan id_gudang_sumber ke dalam query INSERT
         String sql = "INSERT INTO permintaan (id_pengguna_peminta, id_gudang_sumber, tanggal_permintaan, status_permintaan, catatan_permintaan) " +
                      "VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, permintaan.getIdPenggunaPeminta());
             
-            // PERBAIKAN: Set id_gudang_sumber (tidak boleh null jika logika Anda Direct Request)
             if (permintaan.getIdGudangSumber() == null) {
                 throw new SQLException("Gudang sumber (tujuan permintaan) harus dipilih!");
             }
@@ -77,12 +72,11 @@ public class PermintaanRepositories {
         }
     }
 
-    // 🆕 METHOD BARU: Approve Request (Update Status & Sumber)
     public void approveRequest(Connection conn, int idPermintaan, int idGudangSumber) throws SQLException {
         String sql = "UPDATE permintaan SET status_permintaan = ?, id_gudang_sumber = ? WHERE id_permintaan = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, Permintaan.StatusPermintaan.DISETUJUI.name());
-            ps.setInt(2, idGudangSumber); // Simpan ID Gudang Sumber
+            ps.setInt(2, idGudangSumber);
             ps.setInt(3, idPermintaan);
             ps.executeUpdate();
         }
@@ -97,25 +91,21 @@ public class PermintaanRepositories {
         }
     }
     
-    // Helper untuk mapping ResultSet ke Object (Mencegah duplikasi kode)
     private Permintaan mapResultSetToPermintaan(ResultSet rs) throws SQLException {
         Permintaan p = new Permintaan();
         p.setIdPermintaan(rs.getInt("id_permintaan"));
         p.setIdPenggunaPeminta(rs.getInt("id_pengguna_peminta"));
         
-        // Handle id_gudang_sumber yang bisa NULL
         int idSumber = rs.getInt("id_gudang_sumber");
         if (!rs.wasNull()) {
             p.setIdGudangSumber(idSumber);
         }
 
         p.setTanggalPermintaan(rs.getTimestamp("tanggal_permintaan").toLocalDateTime());
-        
-        // Konversi String DB ke Enum Java
+
         try {
             p.setStatusPermintaan(Permintaan.StatusPermintaan.valueOf(rs.getString("status_permintaan")));
         } catch (IllegalArgumentException | NullPointerException e) {
-            // Fallback jika enum tidak cocok
             p.setStatusPermintaan(Permintaan.StatusPermintaan.MENUNGGU); 
         }
         

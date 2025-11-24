@@ -81,6 +81,7 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
         }
         
         String[] header = {"ID", "Gudang Peminta", "Gudang Sumber", "Tanggal", "Status"};
+        
         tableModelSemua = new DefaultTableModel(header, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
@@ -93,7 +94,26 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
         tblProsesPermintaan.setModel(tableModelProses);
         setupHyperlinkColumn(tblProsesPermintaan, 0);
         
-        // Mouse Listener untuk Tabel Bawah (Klik ID -> Proses)
+        tblPermintaan.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = tblPermintaan.rowAtPoint(e.getPoint());
+                int col = tblPermintaan.columnAtPoint(e.getPoint());
+
+                if (row >= 0 && col == 0) {
+                    try {
+                        // Ambil ID (String -> Int)
+                        Object value = tblPermintaan.getValueAt(row, 0);
+                        int idPermintaan = Integer.parseInt(value.toString());
+
+                        bukaDetailPermintaan(idPermintaan); // Buka Form View Only
+
+                    } catch (NumberFormatException ex) {
+                        System.err.println("Error parsing ID: " + ex.getMessage());
+                    }
+                }
+            }
+        });
         tblProsesPermintaan.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -195,9 +215,10 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
     }
     
     private void bukaDetailPermintaan(int idPermintaan) {
-        JOptionPane.showMessageDialog(this, 
-                "Membuka Detail Permintaan ID: " + idPermintaan + "\n(Fitur ini akan kita buat selanjutnya)", 
-                "Info", JOptionPane.INFORMATION_MESSAGE);
+        javax.swing.JFrame parent = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
+        
+        FormBuatPermintaan form = new FormBuatPermintaan(parent, true, idPermintaan);
+        form.setVisible(true);
     }
 
     private void setupHyperlinkColumn(JTable table, int colIndex) {
@@ -248,8 +269,8 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblPermintaan = new javax.swing.JTable();
-        lblPerluDiproses = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
+        lblPerluDiproses = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblProsesPermintaan = new javax.swing.JTable();
 
@@ -306,9 +327,15 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
         add(pnlHeader, java.awt.BorderLayout.PAGE_START);
 
         pnlWadahTabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 40, 20, 40));
-        pnlWadahTabel.setLayout(new java.awt.BorderLayout());
+        pnlWadahTabel.setLayout(new java.awt.GridLayout());
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel1.setLayout(new java.awt.GridLayout(2, 1, 0, 20));
 
         jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setPreferredSize(null);
 
         tblPermintaan.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         tblPermintaan.setModel(new javax.swing.table.DefaultTableModel(
@@ -323,28 +350,22 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
             }
         ));
         tblPermintaan.setFillsViewportHeight(true);
-        tblPermintaan.setShowGrid(false);
+        tblPermintaan.setShowGrid(true);
+        tblPermintaan.setShowVerticalLines(false);
         jScrollPane1.setViewportView(tblPermintaan);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane1)
-                .addGap(0, 0, 0))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jPanel3.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        jPanel1.add(jPanel3);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel2.setLayout(new java.awt.BorderLayout());
 
         lblPerluDiproses.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         lblPerluDiproses.setText("Perlu Diproses");
+        jPanel2.add(lblPerluDiproses, java.awt.BorderLayout.NORTH);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane2.setPreferredSize(null);
 
         tblProsesPermintaan.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         tblProsesPermintaan.setModel(new javax.swing.table.DefaultTableModel(
@@ -359,53 +380,17 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
             }
         ));
         tblProsesPermintaan.setFillsViewportHeight(true);
-        tblProsesPermintaan.setShowGrid(false);
+        tblProsesPermintaan.setShowGrid(true);
+        tblProsesPermintaan.setShowHorizontalLines(true);
         jScrollPane2.setViewportView(tblProsesPermintaan);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jPanel2.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(1, 1, 1))
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addComponent(lblPerluDiproses, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 706, Short.MAX_VALUE)))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addGap(449, 449, 449)
-                    .addComponent(lblPerluDiproses, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(236, Short.MAX_VALUE)))
-        );
+        jPanel1.add(jPanel2);
 
         jScrollPane3.setViewportView(jPanel1);
 
-        pnlWadahTabel.add(jScrollPane3, java.awt.BorderLayout.PAGE_START);
+        pnlWadahTabel.add(jScrollPane3);
 
         add(pnlWadahTabel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents

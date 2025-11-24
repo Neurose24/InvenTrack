@@ -97,13 +97,19 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
         }
         permintaanSaatIni = optP.get();
         
+        java.util.Map<Integer, Barang> mapBarang = new java.util.HashMap<>();
+        for (Barang b : barangRepo.findAll()) {
+            mapBarang.put(b.getIdBarang(), b);
+        }
+        
         List<DetailPermintaan> listDetail = detailRepo.findByPermintaan(idPermintaan);
         
         tableModel.setRowCount(0);
         for (DetailPermintaan dp : listDetail) {
-            Optional<Barang> b = barangRepo.findById(dp.getIdBarang());
-            String nama = b.isPresent() ? b.get().getNamaBarang() : "Unknown";
-            String kat = b.isPresent() ? b.get().getKategori() : "-";
+            Barang b = mapBarang.get(dp.getIdBarang());
+            
+            String nama = (b != null) ? b.getNamaBarang() : "Unknown";
+            String kat = (b != null) ? b.getKategori() : "-";
             
             tableModel.addRow(new Object[]{
                 dp.getIdBarang(),
@@ -164,18 +170,15 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
                         int sisaStok = stokSaya.get().getJumlahStok() - jmlDisetujui;
                         stokRepo.updateJumlahStok(conn, stokSaya.get().getIdStok(), sisaStok);
                         
-                        // Catat Log (Manual Insert)
-                        LogStok log = new LogStok(null, idGudangSaya, idBarang, LogStok.TipeTransaksi.KELUAR, jmlDisetujui, java.time.LocalDateTime.now(), "Pengiriman ID: " + idPengirimanBaru);
-                        // logRepo.insert(conn, log); // Asumsi logRepo punya method insert(conn, log)
-                        // Jika InventoryService digunakan, transaksinya terpisah. Untuk simplifikasi tugas kuliah:
-                        // "Kita anggap InventoryService menangani stok secara independen dulu jika metode ini terlalu rumit".
-                        
-                        // TAPI, cara terbaik adalah menggunakan InventoryService.kurangiStok() SEBELUM/SESUDAH blok ini
-                        // Namun karena InventoryService punya transaction management sendiri (commit/rollback),
-                        // kita tidak bisa menggabungkannya dalam 1 'conn' ini dengan mudah tanpa merombak Service.
-                        
-                        // SOLUSI PRAKTIS: Gunakan InventoryService di luar try-catch ini nanti, 
-                        // atau biarkan Service menangani stok, dan blok ini hanya menangani Pengiriman.
+                        LogStok log = new LogStok(
+                            null, 
+                            idGudangSaya, 
+                            idBarang, 
+                            LogStok.TipeTransaksi.KELUAR, 
+                            jmlDisetujui, 
+                            java.time.LocalDateTime.now(), 
+                            "Pengiriman Keluar ID: " + idPengirimanBaru
+                        );
                     }
                     
                     DetailPengiriman dp = new DetailPengiriman(); 
@@ -192,14 +195,6 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
                 permintaanRepo.updateStatus(conn, idPermintaan, Permintaan.StatusPermintaan.DISETUJUI);
                 
                 conn.commit();
-                
-                for (int i = 0; i < tableModel.getRowCount(); i++) {
-                    int idBarang = (int) tableModel.getValueAt(i, 0);
-                    int jmlDisetujui = (int) tableModel.getValueAt(i, 4);
-                    if (jmlDisetujui > 0) {
-                        inventoryService.kurangiStok(idBarang, permintaanSaatIni.getIdGudangSumber(), jmlDisetujui, "Pengiriman Keluar ID Permintaan: " + idPermintaan);
-                    }
-                }
                 
                 JOptionPane.showMessageDialog(this, "Pengiriman berhasil dibuat! ID Pengiriman: " + idPengirimanBaru);
                 btnCetakSuratJalan.setEnabled(true);

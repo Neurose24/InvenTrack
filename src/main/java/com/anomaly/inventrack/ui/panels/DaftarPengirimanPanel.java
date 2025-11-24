@@ -32,9 +32,9 @@ import javax.swing.table.DefaultTableModel;
  */
 public class DaftarPengirimanPanel extends javax.swing.JPanel {
     
-    private final PengirimanRepositories pengirimanRepo = new PengirimanRepositories();
-    private final GudangRepositories gudangRepo = new GudangRepositories();
-    private final PenggunaRepositories penggunaRepo = new PenggunaRepositories();
+    private final PengirimanRepositories pengirimanRepo;
+    private final GudangRepositories gudangRepo;
+    private final PenggunaRepositories penggunaRepo;
 
     private DefaultTableModel tableModelSemua;
     private DefaultTableModel tableModelProses;
@@ -51,10 +51,22 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
     public DaftarPengirimanPanel() {
         initComponents(); 
         
+        this.pengirimanRepo = new PengirimanRepositories(); 
+        this.gudangRepo = new GudangRepositories();
+        this.penggunaRepo = new PenggunaRepositories();
+        
         if (java.beans.Beans.isDesignTime()) return;
         
         setupUI();
         setupInteractions();
+        
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                loadDataPendukung();
+                loadDataPengiriman();
+            }
+        });
     }
     
     public void setCurrentUser(Pengguna user) {
@@ -86,35 +98,64 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
         tblPengiriman.setModel(tableModelSemua);
-        setupHyperlinkColumn(tblPengiriman);
+        setupTableStyle(tblPengiriman);
         
         tableModelProses = new DefaultTableModel(header, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
         tblProsesPengriman.setModel(tableModelProses);
-        setupHyperlinkColumn(tblProsesPengriman);
+        setupTableStyle(tblProsesPengriman);
+
+        tblPengiriman.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (isLinkColumnClicked(tblPengiriman, e)) {
+                    int row = tblPengiriman.rowAtPoint(e.getPoint());
+                    String idStr = tblPengiriman.getValueAt(row, 0).toString();
+                    int idPengiriman = Integer.parseInt(idStr);
+
+                    bukaFormTerimaBarang(idPengiriman, true); 
+                }
+            }
+        });
         
         tblProsesPengriman.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (isLinkColumnClicked(tblProsesPengriman, e)) {
                     int row = tblProsesPengriman.rowAtPoint(e.getPoint());
-                    int idPengiriman = (int) tblProsesPengriman.getValueAt(row, 0);
-                    bukaFormTerimaBarang(idPengiriman);
+                    String idStr = tblProsesPengriman.getValueAt(row, 0).toString();
+                    int idPengiriman = Integer.parseInt(idStr);
+
+                    bukaFormTerimaBarang(idPengiriman, false); 
                 }
+            }
+        });
+    }
+    
+    private void setupTableStyle(JTable table) {
+        table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setText("<html><u><font color='blue'>" + value + "</font></u></html>");
+                return this;
             }
         });
         
-        tblPengiriman.addMouseListener(new MouseAdapter() {
+        table.addMouseMotionListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (isLinkColumnClicked(tblPengiriman, e)) {
-                    int row = tblPengiriman.rowAtPoint(e.getPoint());
-                    int idPengiriman = (int) tblPengiriman.getValueAt(row, 0);
-                    JOptionPane.showMessageDialog(null, "Detail View Only ID: " + idPengiriman);
-                }
+            public void mouseMoved(MouseEvent e) {
+                if (table.columnAtPoint(e.getPoint()) == 0) table.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                else table.setCursor(Cursor.getDefaultCursor());
             }
         });
+        
+        table.getColumnModel().getColumn(0).setPreferredWidth(100);
+        table.getColumnModel().getColumn(1).setPreferredWidth(150);
+        table.getColumnModel().getColumn(2).setPreferredWidth(150);
+        table.setRowHeight(25);
+        table.getTableHeader().setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 12));
     }
     
     private void setupInteractions() {
@@ -129,6 +170,7 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
     private void loadDataPengiriman() {
         if (currentUserGudangId == -1) return;
         
+        // Pastikan data pendukung ada
         if (mapNamaGudang.isEmpty()) loadDataPendukung();
         
         tableModelSemua.setRowCount(0);
@@ -141,11 +183,9 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
         String keyword = txtCariPengiriman.getText().toLowerCase(); 
 
         for (Pengiriman p : listSemua) {
-            // Resolve ID Gudang
             int idGudangPengirim = mapUserToGudang.getOrDefault(p.getIdPenggunaPengirim(), -1);
             int idGudangPenerima = mapUserToGudang.getOrDefault(p.getIdPenggunaPenerima(), -1);
 
-            // Access Control: Hanya tampilkan jika gudang saya terlibat
             boolean isMasuk = (idGudangPenerima == currentUserGudangId);
             boolean isKeluar = (idGudangPengirim == currentUserGudangId);
             
@@ -154,26 +194,25 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
             String namaPengirim = mapNamaGudang.getOrDefault(idGudangPengirim, "Unknown");
             String namaPenerima = mapNamaGudang.getOrDefault(idGudangPenerima, "Unknown");
 
-            // Filter UI (Hanya Tabel Atas yang difilter)
             boolean matchStatus = filterStatus.equals("Semua Status") || p.getStatusPengiriman().name().equals(filterStatus);
             boolean matchKeyword = keyword.isEmpty() || String.valueOf(p.getIdPengiriman()).contains(keyword) || 
                                    namaPengirim.toLowerCase().contains(keyword) || namaPenerima.toLowerCase().contains(keyword);
 
             String idTampil = String.format("%011d", p.getIdPengiriman());
-            
+
             if (matchStatus && matchKeyword) {
                 tableModelSemua.addRow(new Object[]{
-                    idTampil,
+                    idTampil, 
                     namaPengirim, 
                     namaPenerima,
                     p.getTanggalPengiriman().format(formatter), 
                     p.getStatusPengiriman()
                 });
             }
-
+            
             if (isMasuk && p.getStatusPengiriman() == Pengiriman.StatusPengiriman.DIKIRIM) {
                 tableModelProses.addRow(new Object[]{
-                    idTampil,
+                    idTampil, 
                     namaPengirim, 
                     namaPenerima,
                     p.getTanggalPengiriman().format(formatter), 
@@ -186,9 +225,9 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
         aturTinggiTabel(tblProsesPengriman);
     }
     
-    private void bukaFormTerimaBarang(int idPengiriman) {
+    private void bukaFormTerimaBarang(int idPengiriman, boolean isViewOnly) {
         javax.swing.JFrame parent = (javax.swing.JFrame) SwingUtilities.getWindowAncestor(this);
-        FormTerimaPengiriman dialog = new FormTerimaPengiriman(parent, true, idPengiriman, currentUserId);
+        FormTerimaPengiriman dialog = new FormTerimaPengiriman(parent, true, idPengiriman, currentUserId, isViewOnly);
         dialog.setVisible(true);
         loadDataPengiriman();
     }
@@ -200,24 +239,6 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
         for (Gudang g : gudangRepo.findAll()) mapNamaGudang.put(g.getIdGudang(), g.getNamaGudang());
     }
     
-    private void setupHyperlinkColumn(JTable table) {
-        table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setText("<html><u><font color='blue'>" + value + "</font></u></html>");
-                return this;
-            }
-        });
-        table.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                if (table.columnAtPoint(e.getPoint()) == 0) table.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                else table.setCursor(Cursor.getDefaultCursor());
-            }
-        });
-    }
-    
     private boolean isLinkColumnClicked(JTable table, MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         int col = table.columnAtPoint(e.getPoint());
@@ -225,11 +246,22 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
     }
     
     private void aturTinggiTabel(JTable table) {
-        int tinggi = table.getTableHeader().getPreferredSize().height + (table.getRowHeight() * table.getRowCount());
-        if (tinggi < 100) tinggi = 100;
-        if (tinggi > 300) tinggi = 300;
-        table.setPreferredScrollableViewportSize(new java.awt.Dimension(table.getPreferredSize().width, tinggi));
-        table.revalidate(); table.repaint();
+        int tinggiHeader = table.getTableHeader().getPreferredSize().height;
+        int tinggiBaris = table.getRowHeight();
+        int jumlahBaris = table.getRowCount();
+        
+        int totalTinggi = tinggiHeader + (tinggiBaris * jumlahBaris);
+        
+        if (totalTinggi < 100) totalTinggi = 100;
+        if (totalTinggi > 300) totalTinggi = 300;
+        
+        table.setPreferredScrollableViewportSize(new java.awt.Dimension(table.getPreferredSize().width, totalTinggi));
+        table.revalidate();
+        table.repaint();
+        
+        if (table.getParent() != null && table.getParent().getParent() instanceof javax.swing.JScrollPane) {
+            ((javax.swing.JScrollPane)table.getParent().getParent()).revalidate();
+        }
     }
 
     /**
@@ -254,8 +286,8 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblPengiriman = new javax.swing.JTable();
-        lblPerluDiproses = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
+        lblPerluDiproses = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblProsesPengriman = new javax.swing.JTable();
 
@@ -288,7 +320,7 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
                         .addComponent(lblPilihStatusPengiriman, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cmbStatusPngiriman, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 309, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 348, Short.MAX_VALUE)
                         .addComponent(lblCariPengiriman, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtCariPengiriman, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -310,9 +342,15 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
         add(pnlHeader, java.awt.BorderLayout.PAGE_START);
 
         pnlWadahTabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 40, 20, 40));
-        pnlWadahTabel.setLayout(new java.awt.BorderLayout());
+        pnlWadahTabel.setLayout(new java.awt.GridLayout());
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel1.setLayout(new java.awt.GridLayout(2, 1, 0, 20));
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 20, 1));
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setPreferredSize(null);
 
         tblPengiriman.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         tblPengiriman.setModel(new javax.swing.table.DefaultTableModel(
@@ -327,28 +365,23 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
             }
         ));
         tblPengiriman.setFillsViewportHeight(true);
-        tblPengiriman.setShowGrid(false);
+        tblPengiriman.setPreferredSize(new java.awt.Dimension(0, 0));
+        tblPengiriman.setShowGrid(true);
+        tblPengiriman.setShowVerticalLines(false);
         jScrollPane1.setViewportView(tblPengiriman);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane1)
-                .addGap(0, 0, 0))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jPanel3.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        jPanel1.add(jPanel3);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 20, 1));
+        jPanel2.setLayout(new java.awt.BorderLayout());
 
         lblPerluDiproses.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         lblPerluDiproses.setText("Perlu Diproses");
+        jPanel2.add(lblPerluDiproses, java.awt.BorderLayout.NORTH);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane2.setPreferredSize(null);
 
         tblProsesPengriman.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         tblProsesPengriman.setModel(new javax.swing.table.DefaultTableModel(
@@ -363,53 +396,18 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
             }
         ));
         tblProsesPengriman.setFillsViewportHeight(true);
-        tblProsesPengriman.setShowGrid(false);
+        tblProsesPengriman.setPreferredSize(new java.awt.Dimension(0, 0));
+        tblProsesPengriman.setShowGrid(true);
+        tblProsesPengriman.setShowVerticalLines(false);
         jScrollPane2.setViewportView(tblProsesPengriman);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 797, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jPanel2.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(1, 1, 1))
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addComponent(lblPerluDiproses, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 706, Short.MAX_VALUE)))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addGap(449, 449, 449)
-                    .addComponent(lblPerluDiproses, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(236, Short.MAX_VALUE)))
-        );
+        jPanel1.add(jPanel2);
 
         jScrollPane3.setViewportView(jPanel1);
 
-        pnlWadahTabel.add(jScrollPane3, java.awt.BorderLayout.PAGE_START);
+        pnlWadahTabel.add(jScrollPane3);
 
         add(pnlWadahTabel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents

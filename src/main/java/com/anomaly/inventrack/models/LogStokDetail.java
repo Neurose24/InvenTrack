@@ -3,10 +3,8 @@ package com.anomaly.inventrack.models;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-// Kelas Model Mandiri
 public class LogStokDetail extends LogStok implements Serializable { 
-    
-    // Properti baru
+
     private String namaBarang;
     private String namaGudang;
 
@@ -14,7 +12,6 @@ public class LogStokDetail extends LogStok implements Serializable {
         super();
     }
 
-    // Constructor gabungan
     public LogStokDetail(Integer idLog, Integer idGudang, Integer idBarang, TipeTransaksi tipeTransaksi, Integer jumlahPerubahan, LocalDateTime tanggalLog, String keterangan, String namaBarang, String namaGudang) {
         super(idLog, idGudang, idBarang, tipeTransaksi, jumlahPerubahan, tanggalLog, keterangan);
         this.namaBarang = namaBarang;

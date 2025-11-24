@@ -97,6 +97,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnSubMenuStok = new javax.swing.JButton();
         btnTambahBarang = new javax.swing.JButton();
         btnSubMenuEditStok = new javax.swing.JButton();
+        btnSubMenuLogStok = new javax.swing.JButton();
         btnMenuPermintaan = new javax.swing.JButton();
         pnlSubMenuPermintaan = new javax.swing.JPanel();
         btnSubMenuPermintaan = new javax.swing.JButton();
@@ -208,6 +209,23 @@ public class SidebarPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         pnlSubMenuBarang.add(btnSubMenuEditStok, gridBagConstraints);
 
+        btnSubMenuLogStok.setBackground(new java.awt.Color(170, 204, 213));
+        btnSubMenuLogStok.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnSubMenuLogStok.setText("Log Stok");
+        btnSubMenuLogStok.setBorder(null);
+        btnSubMenuLogStok.setBorderPainted(false);
+        btnSubMenuLogStok.setContentAreaFilled(false);
+        btnSubMenuLogStok.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        btnSubMenuLogStok.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuLogStok.addActionListener(this::btnSubMenuLogStokActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        pnlSubMenuBarang.add(btnSubMenuLogStok, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -313,6 +331,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnSubMenuBuatPengiriman.setBorderPainted(false);
         btnSubMenuBuatPengiriman.setContentAreaFilled(false);
         btnSubMenuBuatPengiriman.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuBuatPengiriman.addActionListener(this::btnSubMenuBuatPengirimanActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -390,6 +409,18 @@ public class SidebarPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnSubMenuDaftarPengirimanActionPerformed
 
+    private void btnSubMenuLogStokActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuLogStokActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardLogStok");
+        }
+    }//GEN-LAST:event_btnSubMenuLogStokActionPerformed
+
+    private void btnSubMenuBuatPengirimanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuBuatPengirimanActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardBuatPengiriman");
+        }
+    }//GEN-LAST:event_btnSubMenuBuatPengirimanActionPerformed
+
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -400,6 +431,7 @@ public class SidebarPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnSubMenuBuatPermintaan;
     private javax.swing.JButton btnSubMenuDaftarPengiriman;
     private javax.swing.JButton btnSubMenuEditStok;
+    private javax.swing.JButton btnSubMenuLogStok;
     private javax.swing.JButton btnSubMenuPermintaan;
     private javax.swing.JButton btnSubMenuStok;
     private javax.swing.JButton btnTambahBarang;

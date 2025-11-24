@@ -11,10 +11,6 @@ import java.util.Optional;
 
 public class StokRepositories {
 
-    // ==========================================================
-    // =========== 1. METHOD BIASA (tanpa transaksi) ============
-    // ==========================================================
-
     public List<Stok> getAll() {
         List<Stok> list = new ArrayList<>();
         String sql = "SELECT * FROM stok";
@@ -82,12 +78,11 @@ public class StokRepositories {
                     stok.setIdStok(generatedKeys.getInt(1));
                 }
             }
-        } // PreparedStatement akan ditutup, Connection tetap terbuka
+        }
     }
 
     public void updateStokMinimum(java.sql.Connection conn, int id_stok, int stokMinBaru) throws java.sql.SQLException {
         String sql = "UPDATE stok SET stok_minimum = ? WHERE id_stok = ?";
-        // Gunakan koneksi yang sama (transaksi) atau buat baru jika conn null
         boolean isInternalConn = (conn == null);
         if (isInternalConn) conn = com.anomaly.inventrack.utils.Database.getConnection();
         
@@ -101,7 +96,6 @@ public class StokRepositories {
     }
 
     public void updateJumlahStok(Connection conn, int id_stok, int jumlah_stokBaru) throws SQLException {
-    // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
     String sql = "UPDATE stok SET jumlah_stok = ?, tanggal_update = ? WHERE id_stok = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -110,19 +104,17 @@ public class StokRepositories {
             ps.setInt(3, id_stok);
             
             ps.executeUpdate();
-
-        } // PreparedStatement akan ditutup, Connection tetap terbuka
+        }
     }
 
     public void delete(Connection conn, int id_stok) throws SQLException {
-    // Catatan: Gunakan conn yang diterima, jangan buat koneksi baru
     String sql = "DELETE FROM stok WHERE id_stok = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id_stok);
             ps.executeUpdate();
 
-        } // PreparedStatement akan ditutup, Connection tetap terbuka
+        }
     }
 
     public List<Stok> getByGudang(int id_gudang) {
@@ -144,10 +136,6 @@ public class StokRepositories {
         }
         return list;
     }
-
-    // ==========================================================
-    // ============== 3. HELPER UNTUK MAPPING ==================
-    // ==========================================================
 
     private Stok mapResultSetToStok(ResultSet rs) throws SQLException {
         Stok s = new Stok();

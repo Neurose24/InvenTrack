@@ -45,12 +45,11 @@ public class GudangRepositories {
             try (ResultSet rs = ps.executeQuery()) {
 
                 if (rs.next()) {
-                    // Bungkus hasil dengan Optional.of()
                     return Optional.of(new Gudang(
                             rs.getInt("id_gudang"),
                             rs.getString("nama_gudang"),
                             rs.getString("lokasi"),
-                            rs.getString("kontak_admin") //
+                            rs.getString("kontak_admin")
                     ));
                 }
             }
@@ -68,7 +67,7 @@ public class GudangRepositories {
 
             ps.setString(1, gudang.getNamaGudang());
             ps.setString(2, gudang.getLokasi());
-            ps.setString(3, gudang.getKontakAdmin()); // Menggunakan getter yang sesuai dari model
+            ps.setString(3, gudang.getKontakAdmin());
             
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {
@@ -93,7 +92,7 @@ public class GudangRepositories {
             
             ps.setString(1, gudang.getNamaGudang());
             ps.setString(2, gudang.getLokasi());
-            ps.setString(3, gudang.getKontakAdmin()); // Menggunakan getter yang sesuai dari model
+            ps.setString(3, gudang.getKontakAdmin());
             ps.setInt(4, gudang.getIdGudang());
             
             return ps.executeUpdate() > 0;

@@ -21,6 +21,16 @@ public class PengirimanRepositories {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
+                String statusStr = rs.getString("status_pengiriman");
+                Pengiriman.StatusPengiriman statusEnum = Pengiriman.StatusPengiriman.DIKIRIM;
+                
+                if (statusStr != null) {
+                    try {
+                        statusEnum = Pengiriman.StatusPengiriman.valueOf(statusStr);
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Status tidak dikenal: " + statusStr);
+                    }
+                }
                 Pengiriman p = new Pengiriman(
                         rs.getInt("id_pengiriman"),
                         rs.getInt("id_permintaan"),
@@ -29,7 +39,7 @@ public class PengirimanRepositories {
                         rs.getInt("id_supir"),
                         rs.getTimestamp("tanggal_pengiriman").toLocalDateTime(),
                         rs.getString("no_kendaraan"),
-                        rs.getObject("status_pengiriman", Pengiriman.StatusPengiriman.class),
+                        statusEnum,
                         rs.getString("keterangan_pengiriman")
                 );
                 list.add(p);
@@ -49,6 +59,13 @@ public class PengirimanRepositories {
             ps.setInt(1, id_pengiriman);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    String statusStr = rs.getString("status_pengiriman");
+                    Pengiriman.StatusPengiriman statusEnum = Pengiriman.StatusPengiriman.DIKIRIM;
+                    if (statusStr != null) {
+                        try {
+                            statusEnum = Pengiriman.StatusPengiriman.valueOf(statusStr);
+                        } catch (Exception e) {}
+                    }
                     return Optional.of(new Pengiriman(
                         rs.getInt("id_pengiriman"),
                         rs.getInt("id_permintaan"),
@@ -57,7 +74,7 @@ public class PengirimanRepositories {
                         rs.getInt("id_supir"),
                         rs.getTimestamp("tanggal_pengiriman").toLocalDateTime(),
                         rs.getString("no_kendaraan"),
-                        rs.getObject("status_pengiriman", Pengiriman.StatusPengiriman.class),
+                        statusEnum,
                         rs.getString("keterangan_pengiriman")
                     ));
                 }
@@ -76,10 +93,11 @@ public class PengirimanRepositories {
             ps.setObject(1, pengiriman.getIdPermintaan()); 
             ps.setInt(2, pengiriman.getIdPenggunaPengirim());
             ps.setInt(3, pengiriman.getIdPenggunaPenerima());
-            ps.setInt(4, pengiriman.getIdSupir());
+            if (pengiriman.getIdSupir() != null) ps.setInt(4, pengiriman.getIdSupir());
+            else ps.setNull(4, java.sql.Types.INTEGER);
             ps.setTimestamp(5, Timestamp.valueOf(pengiriman.getTanggalPengiriman()));
             ps.setString(6, pengiriman.getNoKendaraan());
-            ps.setObject(7, pengiriman.getStatusPengiriman().name());
+            ps.setString(7, pengiriman.getStatusPengiriman().name()); 
             ps.setString(8, pengiriman.getKeteranganPengiriman());
             ps.executeUpdate();
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -91,9 +109,9 @@ public class PengirimanRepositories {
     }
 
     public void updateStatus(Connection conn, int id_pengiriman, Pengiriman.StatusPengiriman status) throws SQLException {
-    String sql = "UPDATE pengiriman SET status_pengiriman = ? WHERE id_pengiriman = ?";
+        String sql = "UPDATE pengiriman SET status_pengiriman = ? WHERE id_pengiriman = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setObject(1, status.toString());
+            ps.setString(1, status.name());
             ps.setInt(2, id_pengiriman);
             ps.executeUpdate();
         }

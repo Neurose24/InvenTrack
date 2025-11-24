@@ -18,7 +18,8 @@ public class Database {
         config.setMaximumPoolSize(Config.getInt("db.pool.maximumPoolSize", 5));
         config.setConnectionTimeout(Long.parseLong(Config.get("db.pool.connectionTimeout") == null ? "30000" : Config.get("db.pool.connectionTimeout")));
         config.setPoolName("InventrackPool");
-
+        config.setMinimumIdle(1);
+        config.setIdleTimeout(10000);
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

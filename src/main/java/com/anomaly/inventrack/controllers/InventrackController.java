@@ -29,10 +29,6 @@ public class InventrackController {
         this.penggunaRepo = new PenggunaRepositories();
     }
 
-    // =========================================================
-    // ============== FUNGSI OTENTIKASI & REGISTRASI ============
-    // =========================================================
-
     public Optional<Pengguna> login(String username, String password) {
         try {
             return penggunaService.authenticate(username, password);
@@ -62,25 +58,12 @@ public class InventrackController {
         }
     }
 
-    // =========================================================
-    // FUNGSI MASTER DATA (UNTUK DROPDOWN)
-    // =========================================================
-
-    /**
-     * Mengambil semua gudang untuk dropdown registrasi.
-     */
     public List<Gudang> getAllGudang() {
         return masterDataService.getAllGudang();
     }
 
-    // =========================================================
-    // ============== FUNGSI ALUR UTAMA =================
-    // =========================================================
-
     public String buatPermintaanBaru(Permintaan permintaan, List<DetailPermintaan> detailList) {
         try {
-            // Asumsi metode di PermintaanService bernama createPermintaan
-            // (sebelumnya adalah buatPermintaanBaru)
             permintaanService.buatPermintaanBaru(permintaan, detailList); 
             return "SUKSES: Permintaan barang berhasil dibuat dengan ID: " + permintaan.getIdPermintaan();
         } catch (BusinessException e) {
@@ -101,16 +84,8 @@ public class InventrackController {
         }
     }
     
-    // =========================================================
-    // =============== FUNGSI LAPORAN (DIPERBAIKI) =============
-    // =========================================================
-    
-    /**
-     * Endpoint: Mendapatkan Laporan Stok per Gudang (Data mentah).
-     */
     public List<Stok> getLaporanStok() {
         try {
-            // Panggilan ini sudah benar
             return inventoryService.getAllStok();
         } catch (BusinessException e) {
             System.err.println("ERROR BISNIS LAPORAN STOK: " + e.getMessage());
@@ -118,23 +93,14 @@ public class InventrackController {
         }
     }
     
-    /**
-     * Endpoint: Mendapatkan Laporan Log Stok Detail (Perlu LogStokDetail.java dan findDetailAll()).
-     */
     public List<LogStokDetail> getLaporanLogStokDetail() {
         try {
-            // PERBAIKAN: Memanggil service, bukan repository
             return inventoryService.getLogStokDetails(); 
         } catch (RuntimeException e) {
             System.err.println("ERROR DATABASE: Gagal memuat log stok detail. " + e.getMessage());
             return List.of(); 
         }
     }
-    
-    // =========================================================
-    // ================ SIMULASI PENGGUNAAN BARU ====================
-    // =========================================================
-
     public static void main(String[] args) {
         InventrackController controller = new InventrackController();
         

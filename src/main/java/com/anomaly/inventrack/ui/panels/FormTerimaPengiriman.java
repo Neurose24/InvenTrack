@@ -26,6 +26,7 @@ public class FormTerimaPengiriman extends javax.swing.JDialog {
     
     private final int idPengiriman;
     private final int idUserPenerima;
+    private final boolean isViewOnly;
     
     private final PengirimanRepositories pengirimanRepo = new PengirimanRepositories();
     private final DetailPengirimanRepositories detailPengirimanRepo = new DetailPengirimanRepositories();
@@ -41,19 +42,21 @@ public class FormTerimaPengiriman extends javax.swing.JDialog {
     /**
      * Creates new form FormTerimaPengiriman
      */
-    public FormTerimaPengiriman(java.awt.Frame parent, boolean modal, int idPengiriman, int idUserPenerima) {
+    public FormTerimaPengiriman(java.awt.Frame parent, boolean modal, int idPengiriman, int idUserPenerima, boolean isViewOnly) {
         super(parent, modal);
         initComponents();
         
         this.idPengiriman = idPengiriman;
         this.idUserPenerima = idUserPenerima;
+        this.isViewOnly = isViewOnly;
         
         setupUI();
         loadData();
     }
     
     private void setupUI() {
-        setTitle("Penerimaan Barang Masuk - Pengiriman ID: " + idPengiriman);
+        String judul = isViewOnly ? "Detail Pengiriman (Read Only)" : "Penerimaan Barang Masuk";
+        setTitle(judul + " - ID: " + idPengiriman);
         setLocationRelativeTo(null);
         
         lblIdPermintaan.setText("-");
@@ -63,12 +66,13 @@ public class FormTerimaPengiriman extends javax.swing.JDialog {
         lblTanggalPengiriman.setText("-");
         lblStatusPengiriman.setText("-");
         
-        String[] header = {"ID Detail", "Nama Barang", "Jml Dikirim", "Jml Diterima (Fisik)", "Catatan"};
+        String[] header = {"ID Detail", "Nama Barang", "Jml Dikirim", "Jml Diterima", "Catatan", "Status Barang"};
         
         tableModel = new DefaultTableModel(header, 0) {
             @Override 
-            public boolean isCellEditable(int row, int col) { 
-                return col == 3 || col == 4;
+            public boolean isCellEditable(int row, int col) {
+                if (isViewOnly) return false;
+                return col == 3 || col == 4; 
             }
             @Override 
             public Class<?> getColumnClass(int columnIndex) {
@@ -76,11 +80,17 @@ public class FormTerimaPengiriman extends javax.swing.JDialog {
             }
         };
         tblBarang.setModel(tableModel);
-        
         tblBarang.getColumnModel().removeColumn(tblBarang.getColumnModel().getColumn(0));
-
-        tblBarang.getColumnModel().getColumn(0).setPreferredWidth(200);
+        tblBarang.getColumnModel().getColumn(0).setPreferredWidth(150);
         tblBarang.setRowHeight(25);
+        
+        if (isViewOnly) {
+            btnSimpan.setVisible(false);
+            btnBatal.setText("Tutup");
+        } else {
+            btnSimpan.setVisible(true);
+            btnBatal.setText("Batal");
+        }
     }
     
     private void loadData() {
@@ -95,61 +105,79 @@ public class FormTerimaPengiriman extends javax.swing.JDialog {
         lblIdPermintaan.setText(String.format("%011d", p.getIdPermintaan()));
         lblTanggalPengiriman.setText(p.getTanggalPengiriman().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
         lblStatusPengiriman.setText(p.getStatusPengiriman().name());
+        if (isViewOnly) {
+            txtKeterangan.setEditable(false);
+        }
         
-        penggunaRepo.findById(p.getIdPenggunaPengirim()).ifPresent(user -> {
-            gudangRepo.findById(user.getIdGudang()).ifPresent(g -> lblGudangAsal.setText(g.getNamaGudang()));
-        });
+        penggunaRepo.findById(p.getIdPenggunaPengirim()).ifPresent(user -> 
+            gudangRepo.findById(user.getIdGudang()).ifPresent(g -> lblGudangAsal.setText(g.getNamaGudang())));
         
-        penggunaRepo.findById(p.getIdPenggunaPenerima()).ifPresent(user -> {
-            gudangRepo.findById(user.getIdGudang()).ifPresent(g -> lblGudangTujuan.setText(g.getNamaGudang()));
-        });
+        penggunaRepo.findById(p.getIdPenggunaPenerima()).ifPresent(user -> 
+            gudangRepo.findById(user.getIdGudang()).ifPresent(g -> lblGudangTujuan.setText(g.getNamaGudang())));
         
         if (p.getIdSupir() != null) {
             supirRepo.findById(p.getIdSupir()).ifPresent(s -> lblNamaSupir.setText(s.getNamaSupir()));
-        } else {
-            lblNamaSupir.setText("-");
         }
+
+        java.util.Map<Integer, String> mapNamaBarang = new java.util.HashMap<>();
+        for (Barang b : barangRepo.findAll()) mapNamaBarang.put(b.getIdBarang(), b.getNamaBarang());
 
         listDetailAsli = detailPengirimanRepo.findByPengiriman(idPengiriman);
         tableModel.setRowCount(0);
         
         for (DetailPengiriman dp : listDetailAsli) {
-            String namaBarang = barangRepo.findById(dp.getIdBarang())
-                    .map(Barang::getNamaBarang).orElse("Unknown Item");
+            String namaBarang = mapNamaBarang.getOrDefault(dp.getIdBarang(), "Unknown");
+            int displayDiterima = isViewOnly ? dp.getJumlahDiterima() : dp.getJumlahDikirim();
             
             tableModel.addRow(new Object[]{
                 dp.getIdDetailPengiriman(),
                 namaBarang,
                 dp.getJumlahDikirim(),
-                dp.getJumlahDikirim(),
-                ""
+                displayDiterima,
+                dp.getCatatanPenerimaan(),
+                dp.getStatusPenerimaan().name()
             });
         }
     }
     
     private void prosesTerima() {
-        if (tblBarang.getCellEditor() != null) tblBarang.getCellEditor().stopCellEditing();
+        if (isViewOnly) return;
+
+        if (tblBarang.getCellEditor() != null) {
+            tblBarang.getCellEditor().stopCellEditing();
+        }
         
         int confirm = JOptionPane.showConfirmDialog(this, 
-                "Pastikan perhitungan fisik sudah benar.\nStok akan ditambahkan ke gudang Anda.\nLanjutkan?", 
+                "Pastikan perhitungan fisik barang sudah benar.\n" +
+                "Stok akan otomatis ditambahkan ke gudang Anda.\n\n" +
+                "Lanjutkan proses penerimaan?", 
                 "Konfirmasi Penerimaan", JOptionPane.YES_NO_OPTION);
         
         if (confirm != JOptionPane.YES_OPTION) return;
-        
+
         try {
             List<DetailPengiriman> listUpdate = new ArrayList<>();
-            
+
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 int idDetail = (int) tableModel.getValueAt(i, 0);
                 int jmlDikirim = (int) tableModel.getValueAt(i, 2);
-                int jmlDiterima = (int) tableModel.getValueAt(i, 3);
-                String catatan = (String) tableModel.getValueAt(i, 4);
                 
-                if (jmlDiterima < 0) throw new Exception("Jumlah diterima tidak boleh negatif!");
+                Object objDiterima = tableModel.getValueAt(i, 3);
+                if (objDiterima == null) throw new Exception("Jumlah diterima tidak boleh kosong pada baris ke-" + (i+1));
+                int jmlDiterima = Integer.parseInt(objDiterima.toString());
+                
+                String catatan = (String) tableModel.getValueAt(i, 4);
+                if (catatan == null) catatan = "";
+
+                if (jmlDiterima < 0) {
+                    throw new Exception("Jumlah diterima tidak boleh negatif pada baris ke-" + (i+1));
+                }
+                
                 if (jmlDiterima > jmlDikirim) {
-                    throw new Exception("Jumlah diterima melebihi pengiriman pada baris ke-" + (i+1));
+                    throw new Exception("Jumlah diterima (" + jmlDiterima + ") melebihi jumlah yang dikirim (" + jmlDikirim + ") pada baris ke-" + (i+1));
                 }
 
+                boolean found = false;
                 for (DetailPengiriman dpAsli : listDetailAsli) {
                     if (dpAsli.getIdDetailPengiriman() == idDetail) {
                         dpAsli.setJumlahDiterima(jmlDiterima);
@@ -158,26 +186,33 @@ public class FormTerimaPengiriman extends javax.swing.JDialog {
                         if (jmlDiterima == jmlDikirim) {
                             dpAsli.setStatusPenerimaan(DetailPengiriman.StatusPenerimaan.DITERIMA);
                         } else {
-                            dpAsli.setStatusPenerimaan(DetailPengiriman.StatusPenerimaan.RUSAK); 
-                            if (catatan.isEmpty()) {
-                                throw new Exception("Harap isi catatan alasan mengapa jumlah kurang pada baris ke-" + (i+1));
+                            dpAsli.setStatusPenerimaan(DetailPengiriman.StatusPenerimaan.RUSAK);
+                            if (catatan.trim().isEmpty()) {
+                                throw new Exception("Harap isi 'Catatan' untuk barang yang jumlahnya kurang/rusak pada baris ke-" + (i+1));
                             }
                         }
                         
                         listUpdate.add(dpAsli);
+                        found = true;
                         break;
                     }
+                }
+                
+                if (!found) {
+                    throw new Exception("Data detail tidak sinkron (ID Detail tidak ditemukan). Silakan tutup dan buka ulang.");
                 }
             }
             
             pengirimanService.receivePengiriman(idPengiriman, listUpdate);
             
-            JOptionPane.showMessageDialog(this, "Penerimaan Selesai! Stok gudang telah diperbarui.");
+            JOptionPane.showMessageDialog(this, "Penerimaan Selesai!\nStok gudang telah diperbarui.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
             dispose();
             
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Input jumlah harus berupa angka!", "Error Input", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Gagal: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Gagal memproses: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

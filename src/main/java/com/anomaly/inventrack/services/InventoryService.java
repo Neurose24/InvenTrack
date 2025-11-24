@@ -25,20 +25,15 @@ public class InventoryService {
         this.logRepo = new LogStokRepositories();
     }
 
-    // ✅ Ambil semua stok
     public List<Stok> getAllStok() {
-        return stokRepo.getAll(); //
+        return stokRepo.getAll();
     }
 
-    // ✅ Ambil stok berdasarkan barang & gudang
-   public Stok getStok(int idBarang, int idGudang) {
+    public Stok getStok(int idBarang, int idGudang) {
         return stokRepo.findByBarangAndGudang(idBarang, idGudang)
             .orElseThrow(() -> new NotFoundException("Stok tidak ditemukan untuk barang ID " + idBarang + " di gudang ID " + idGudang));
     }
 
-    // =========================================================
-    // ============== 1. LOGIKA TAMBAH STOK (TRANSACIONAL) ============
-    // =========================================================
     public void tambahStok(int idBarang, int idGudang, int jumlah, String keterangan) {
         if (jumlah <= 0) {
             throw new IllegalArgumentException("Jumlah penambahan harus lebih dari nol.");
@@ -47,7 +42,7 @@ public class InventoryService {
         Connection conn = null;
         try {
             conn = Database.getConnection();
-            conn.setAutoCommit(false); // Mulai transaksi
+            conn.setAutoCommit(false);
             
             Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudang);
             
@@ -60,23 +55,22 @@ public class InventoryService {
                 stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru);
             }
 
-            // Catat Log Stok
             LogStok log = new LogStok(
                     null,
                     idGudang,
                     idBarang,
-                    LogStok.TipeTransaksi.MASUK, //
+                    LogStok.TipeTransaksi.MASUK,
                     jumlah,
                     LocalDateTime.now(),
                     keterangan
             );
-            logRepo.insert(conn, log); // Transaksional
+            logRepo.insert(conn, log);
 
-            conn.commit(); // Komit jika semua operasi berhasil
+            conn.commit();
 
         } catch (SQLException e) {
             try {
-                if (conn != null) conn.rollback(); // Rollback jika ada yang gagal
+                if (conn != null) conn.rollback();
             } catch (SQLException rollbackEx) {
                 System.err.println("Rollback gagal: " + rollbackEx.getMessage());
             }
@@ -99,7 +93,6 @@ public class InventoryService {
             conn = Database.getConnection();
             conn.setAutoCommit(false); 
             
-            // 1. Update Stok (Logika sama dengan tambah biasa)
             Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudang);
             if (optStok.isEmpty()) {
                 Stok newStok = new Stok(null, idGudang, idBarang, jumlah);
@@ -110,10 +103,9 @@ public class InventoryService {
                 stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru);
             }
 
-            // 2. Catat Log Stok sebagai KONTAINER
             LogStok log = new LogStok(
                     null, idGudang, idBarang,
-                    LogStok.TipeTransaksi.KONTAINER, // <--- BEDA DISINI
+                    LogStok.TipeTransaksi.KONTAINER,
                     jumlah, LocalDateTime.now(), keterangan
             );
             logRepo.insert(conn, log);
@@ -127,9 +119,6 @@ public class InventoryService {
         }
     }
 
-    // =========================================================
-    // ============== 2. LOGIKA KURANGI STOK (TRANSACIONAL) ============
-    // =========================================================
     public void kurangiStok(int idBarang, int idGudang, int jumlah, String keterangan) {
         if (jumlah <= 0) {
             throw new IllegalArgumentException("Jumlah pengurangan harus lebih dari nol.");
@@ -138,7 +127,7 @@ public class InventoryService {
         Connection conn = null;
         try {
             conn = Database.getConnection();
-            conn.setAutoCommit(false); // Mulai transaksi
+            conn.setAutoCommit(false);
             
             Stok stok = stokRepo.findByBarangAndGudang(idBarang, idGudang)
                 .orElseThrow(() -> new BusinessException("Stok tidak mencukupi (barang tidak ditemukan)"));
@@ -147,23 +136,21 @@ public class InventoryService {
                 throw new BusinessException("Stok tidak mencukupi untuk dikurangi");
             }
 
-            // Update stok
             int jumlahBaru = stok.getJumlahStok() - jumlah;
-            stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru); // Transaksional
+            stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahBaru);
 
-            // Catat Log Stok
             LogStok log = new LogStok(
                     null,
                     idGudang,
                     idBarang,
-                    LogStok.TipeTransaksi.KELUAR, //
+                    LogStok.TipeTransaksi.KELUAR,
                     jumlah,
                     LocalDateTime.now(),
                     keterangan
             );
-            logRepo.insert(conn, log); // Transaksional
+            logRepo.insert(conn, log);
 
-            conn.commit(); // Komit jika semua operasi berhasil
+            conn.commit();
 
         } catch (SQLException e) {
             try {
@@ -184,9 +171,6 @@ public class InventoryService {
         }
     }
 
-    // =========================================================
-    // ============== 3. LOGIKA REKONSILIASI STOK (TRANSACIONAL) ============
-    // =========================================================
     public void rekonsiliasiStok(int idBarang, int idGudang, int jumlahFisik, String keterangan) {
         if (jumlahFisik < 0) {
             throw new IllegalArgumentException("Jumlah fisik tidak boleh negatif.");
@@ -195,17 +179,13 @@ public class InventoryService {
         Connection conn = null;
         try {
             conn = Database.getConnection();
-            conn.setAutoCommit(false); // Mulai transaksi
-            
-            // PERBAIKAN: Tangani Optional<Stok> yang dikembalikan oleh repositori
+            conn.setAutoCommit(false);
             Optional<Stok> optStok = stokRepo.findByBarangAndGudang(idBarang, idGudang);
             
-            if (optStok.isEmpty()) { // <-- PERBAIKAN: Gunakan .isEmpty()
-                // Jika belum ada stok, buat baru
+            if (optStok.isEmpty()) {
                 Stok newStok = new Stok(null, idGudang, idBarang, jumlahFisik);
                 stokRepo.insert(conn, newStok);
                 
-                // Catat log
                 LogStok log = new LogStok(
                         null,
                         idGudang,
@@ -220,19 +200,16 @@ public class InventoryService {
                 return;
             }
 
-            // Jika stok ada, ambil objeknya dari Optional
-            Stok stok = optStok.get(); // <-- PERBAIKAN: Ambil objek Stok
+            Stok stok = optStok.get();
 
-            int selisih = jumlahFisik - stok.getJumlahStok(); // <-- Sekarang ini valid
+            int selisih = jumlahFisik - stok.getJumlahStok();
             if (selisih == 0) {
-                conn.commit(); // Tetap commit jika tidak ada operasi yang dilakukan
+                conn.commit();
                 return;
             }
 
-            // Update stok
-            stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahFisik); // <-- Sekarang ini valid
+            stokRepo.updateJumlahStok(conn, stok.getIdStok(), jumlahFisik);
 
-            // Catat Log Stok
             LogStok.TipeTransaksi tipe = (selisih > 0)
                     ? LogStok.TipeTransaksi.REKONSILIASI_TAMBAH
                     : LogStok.TipeTransaksi.REKONSILIASI_KURANG;
@@ -246,9 +223,9 @@ public class InventoryService {
                     LocalDateTime.now(),
                     keterangan + " (selisih " + selisih + ")"
             );
-            logRepo.insert(conn, log); // Transaksional
+            logRepo.insert(conn, log);
 
-            conn.commit(); // Komit jika semua operasi berhasil
+            conn.commit();
 
         } catch (SQLException e) {
             try {
@@ -269,20 +246,11 @@ public class InventoryService {
         }
     }
 
-    // ✅ Lihat semua log stok
     public List<LogStok> getAllLog() {
-        return logRepo.findAll(); //
+        return logRepo.findAll();
     }
 
-    // =========================================================
-    // =============== FUNGSI LAPORAN (BARU) ===================
-    // =========================================================
-    
-    /**
-     * Mendapatkan laporan detail log stok (dengan join nama barang/gudang).
-     */
     public List<LogStokDetail> getLogStokDetails() {
-        // Mendelegasikan panggilan ke repositori
         return logRepo.findDetailAll();
     }
 }
