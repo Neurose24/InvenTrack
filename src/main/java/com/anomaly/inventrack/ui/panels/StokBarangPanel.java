@@ -89,9 +89,14 @@ public class StokBarangPanel extends javax.swing.JPanel {
         tblBarang.getColumnModel().getColumn(2).setPreferredWidth(100);
         tblBarang.getColumnModel().getColumn(3).setPreferredWidth(150);
         tblBarang.getColumnModel().getColumn(4).setPreferredWidth(60);
+        
+        tblBarang.setFillsViewportHeight(true);
     }
     
     private void loadDataPendukung() {
+        mapBarang.clear(); 
+        mapNamaGudang.clear();
+
         List<Barang> listBarang = barangRepo.findAll();
         for (Barang b : listBarang) {
             mapBarang.put(b.getIdBarang(), b);
@@ -151,62 +156,114 @@ public class StokBarangPanel extends javax.swing.JPanel {
     private void loadDataStok() {
         tableModel.setRowCount(0); 
         
+        // 1. AMBIL FILTER UI
         ComboItem selectedItem = (ComboItem) cmbGudang.getSelectedItem();
         int idGudangPilih = (selectedItem != null) ? selectedItem.getValue() : -1;
+        
         String selectedKategori = (String) cmbKategori.getSelectedItem();
         if (selectedKategori == null) selectedKategori = "Semua Kategori";
         String selectedSatuan = (String) cmbSatuan.getSelectedItem();
         if (selectedSatuan == null) selectedSatuan = "Semua Satuan";
-        
         String keyword = txtCariBarang.getText().toLowerCase(); 
 
-        List<Stok> listStokDb;
+        // 2. SIAPKAN DATA GUDANG YANG AKAN DITAMPILKAN
+        // Jika filter "Semua", ambil semua gudang. Jika spesifik, ambil gudang itu saja.
+        java.util.List<Gudang> targetGudangs;
         if (idGudangPilih == -1) {
-            listStokDb = stokRepo.getAll(); 
+            targetGudangs = gudangRepo.findAll(); // Ambil List Semua Gudang
         } else {
-            listStokDb = stokRepo.getByGudang(idGudangPilih); 
-        }
-        
-        // Buat Map Cepat untuk Pencarian Stok: Map<IdBarang, Stok>
-        // Ini agar kita tidak perlu looping listStokDb berkali-kali di dalam loop barang
-        Map<Integer, Stok> mapStokCepat = new HashMap<>();
-        for (Stok s : listStokDb) {
-            // Jika filter semua gudang, kita harus hati-hati agar tidak duplikat ID Barang
-            // Tapi untuk tampilan sederhana, jika idGudangPilih -1 (Semua), 
-            // logika ini akan menampilkan baris per gudang (jika kita loop listStokDb).
-            
-            // TAPI, karena kita ingin menampilkan SEMUA BARANG (termasuk yang 0),
-            // Kita akan loop Barang. 
-            // KHUSUS Filter Per Gudang (idGudangPilih != -1), logika ini bekerja sempurna.
-            mapStokCepat.put(s.getIdBarang(), s);
+            // Ambil 1 gudang saja (dibungkus list agar logic looping di bawah tetap sama)
+            java.util.Optional<Gudang> opt = gudangRepo.findById(idGudangPilih);
+            targetGudangs = opt.map(java.util.List::of).orElse(java.util.Collections.emptyList());
         }
 
+        // 3. SIAPKAN DATA STOK (Grouping per Barang)
+        List<Stok> listAllStok = stokRepo.getAll(); 
+        
+        // Map Canggih: Key Utama = ID Barang, Key Dalam = ID Gudang, Value = Stok
+        // Ini memudahkan kita ngecek: "Barang X di Gudang Y stoknya berapa?" secara instan
+        Map<Integer, Map<Integer, Stok>> mapStokMatrix = new HashMap<>();
+        
+        for (Stok s : listAllStok) {
+            mapStokMatrix
+                .computeIfAbsent(s.getIdBarang(), k -> new HashMap<>())
+                .put(s.getIdGudang(), s);
+        }
+
+        // 4. LOOPING UTAMA: MASTER BARANG
+        if (mapBarang.isEmpty()) loadDataPendukung();
+
         for (Barang b : mapBarang.values()) {
-            
-            Stok sFound = mapStokCepat.get(b.getIdBarang());
-            
-            int idStok      = (sFound != null) ? sFound.getIdStok() : -1;
-            int jumlah      = (sFound != null) ? sFound.getJumlahStok() : 0;
-            String lokasi   = (sFound != null) ? mapNamaGudang.getOrDefault(sFound.getIdGudang(), "Unknown") : "-";
-            
-            if (idGudangPilih != -1 && sFound == null) {
-                lokasi = mapNamaGudang.getOrDefault(idGudangPilih, "Gudang Terpilih");
+            try {
+                // --- FILTER BARANG ---
+                String namaBarang = (b.getNamaBarang() != null) ? b.getNamaBarang() : "Tanpa Nama";
+                String kategori   = (b.getKategori() != null) ? b.getKategori() : "-";
+                String satuan     = (b.getSatuan() != null) ? b.getSatuan() : "-";
+                String idBarangStr = String.valueOf(b.getIdBarang());
+
+                boolean matchKategori = selectedKategori.equals("Semua Kategori") || kategori.equalsIgnoreCase(selectedKategori);
+                boolean matchSatuan   = selectedSatuan.equals("Semua Satuan") || satuan.equalsIgnoreCase(selectedSatuan);
+                boolean matchKeyword  = keyword.isEmpty() || 
+                                        idBarangStr.contains(keyword) ||
+                                        namaBarang.toLowerCase().contains(keyword) ||
+                                        kategori.toLowerCase().contains(keyword) ||
+                                        satuan.toLowerCase().contains(keyword);
+
+                if (!matchKategori || !matchKeyword || !matchSatuan) {
+                    continue; 
+                }
+
+                // --- LOOPING KEDUA: GUDANG (Cartesian Product) ---
+                // Kita loop setiap gudang target untuk menampilkan stoknya (ada atau 0)
+                
+                for (Gudang g : targetGudangs) {
+                    
+                    // Cek Stok di Map Matrix
+                    Stok s = null;
+                    if (mapStokMatrix.containsKey(b.getIdBarang())) {
+                        s = mapStokMatrix.get(b.getIdBarang()).get(g.getIdGudang());
+                    }
+                    
+                    // Tentukan Nilai
+                    int idStok = (s != null) ? s.getIdStok() : -1;
+                    int jumlah = (s != null) ? s.getJumlahStok() : 0;
+                    String namaGudang = g.getNamaGudang(); // Nama Gudang pasti muncul
+                    
+                    // Tambahkan ke tabel
+                    tableModel.addRow(new Object[]{
+                        idStok,
+                        b.getIdBarang(),
+                        namaBarang,
+                        kategori,
+                        namaGudang, // Kolom Lokasi sekarang pasti terisi nama gudang
+                        jumlah,     // 0 jika tidak ada stok
+                        satuan
+                    });
+                }
+
+            } catch (Exception e) {
+                System.err.println("Error row barang ID: " + b.getIdBarang());
             }
-            
-            
-            // --- FILTERING LOGIC ---
-            String namaBarang = b.getNamaBarang();
+        }
+        aturTinggiTabel();
+    }
+    
+    private void tambahBarisKeTabel(Barang b, int idStok, int jumlah, String lokasi, 
+                                    String filterKategori, String filterSatuan, String keyword) {
+        try {
+            String namaBarang = (b.getNamaBarang() != null) ? b.getNamaBarang() : "Tanpa Nama";
             String kategori   = (b.getKategori() != null) ? b.getKategori() : "-";
             String satuan     = (b.getSatuan() != null) ? b.getSatuan() : "-";
             String idBarangStr = String.valueOf(b.getIdBarang());
-            
-            boolean matchKategori = selectedKategori.equals("Semua Kategori") || kategori.equalsIgnoreCase(selectedKategori);
-            boolean matchSatuan   = selectedSatuan.equals("Semua Satuan") || satuan.equalsIgnoreCase(selectedSatuan);
+
+            boolean matchKategori = filterKategori.equals("Semua Kategori") || kategori.equalsIgnoreCase(filterKategori);
+            boolean matchSatuan   = filterSatuan.equals("Semua Satuan") || satuan.equalsIgnoreCase(filterSatuan);
             boolean matchKeyword  = keyword.isEmpty() || 
                                     idBarangStr.contains(keyword) ||
                                     namaBarang.toLowerCase().contains(keyword) ||
                                     kategori.toLowerCase().contains(keyword) ||
-                                    satuan.toLowerCase().contains(keyword);
+                                    satuan.toLowerCase().contains(keyword) ||
+                                    lokasi.toLowerCase().contains(keyword);
 
             if (matchKategori && matchKeyword && matchSatuan) {
                 tableModel.addRow(new Object[]{
@@ -219,6 +276,36 @@ public class StokBarangPanel extends javax.swing.JPanel {
                     satuan
                 });
             }
+        } catch (Exception e) {
+            System.err.println("Error row: " + e.getMessage());
+        }
+    }
+    
+    private void aturTinggiTabel() {
+        int tinggiHeader = tblBarang.getTableHeader().getPreferredSize().height;
+        int tinggiBaris = tblBarang.getRowHeight();
+        int jumlahBaris = tblBarang.getRowCount();
+        
+        int totalTinggi = tinggiHeader + (tinggiBaris * jumlahBaris);
+
+        int minTinggi = 100;
+        int maxTinggi = 500;
+        
+        if (totalTinggi < minTinggi) totalTinggi = minTinggi;
+        if (totalTinggi > maxTinggi) totalTinggi = maxTinggi;
+        
+        java.awt.Dimension dim = new java.awt.Dimension(
+            tblBarang.getPreferredSize().width,
+            totalTinggi
+        );
+        
+        tblBarang.setPreferredScrollableViewportSize(dim);
+        
+        tblBarang.revalidate();
+        tblBarang.repaint();
+        
+        if (tblBarang.getParent() != null && tblBarang.getParent().getParent() instanceof javax.swing.JScrollPane) {
+            ((javax.swing.JScrollPane)tblBarang.getParent().getParent()).revalidate();
         }
     }
 
@@ -265,7 +352,7 @@ public class StokBarangPanel extends javax.swing.JPanel {
         lblPilihKategori.setText("Pilih Kategori");
 
         lblPilihSatuan.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        lblPilihSatuan.setText("Pilih Kategori");
+        lblPilihSatuan.setText("Pilih Satuan");
 
         cmbSatuan.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         cmbSatuan.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -325,7 +412,10 @@ public class StokBarangPanel extends javax.swing.JPanel {
         add(pnlHeader, java.awt.BorderLayout.PAGE_START);
 
         pnlWadahTabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        pnlWadahTabel.setPreferredSize(new java.awt.Dimension(100, 80));
         pnlWadahTabel.setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(0, 0));
 
         tblBarang.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         tblBarang.setModel(new javax.swing.table.DefaultTableModel(
@@ -339,6 +429,7 @@ public class StokBarangPanel extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tblBarang.setMaximumSize(new java.awt.Dimension(2147483647, 30000));
         tblBarang.setShowGrid(false);
         jScrollPane1.setViewportView(tblBarang);
 

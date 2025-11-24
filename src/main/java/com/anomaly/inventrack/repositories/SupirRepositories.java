@@ -23,7 +23,8 @@ public class SupirRepositories {
                         rs.getInt("id_supir"),
                         rs.getString("nama_supir"),
                         rs.getString("no_hp"),
-                        rs.getString("no_kendaraan")
+                        rs.getString("no_kendaraan"),
+                        rs.getInt("id_gudang")
                 );
                 list.add(s);
             }
@@ -47,7 +48,8 @@ public class SupirRepositories {
                             rs.getInt("id_supir"),
                             rs.getString("nama_supir"),
                             rs.getString("no_hp"),
-                            rs.getString("no_kendaraan")
+                            rs.getString("no_kendaraan"),
+                            rs.getInt("id_gudang")
                     ));
                 }
             }
@@ -59,13 +61,20 @@ public class SupirRepositories {
     }
 
     public void saveSupir(Supir supir) {
-        String sql = "INSERT INTO supir (nama_supir, no_hp, no_kendaraan) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO supir (nama_supir, no_hp, no_kendaraan, id_gudang) VALUES (?, ?, ?, ?)";
+        
         try (Connection conn = Database.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, supir.getNamaSupir());
             ps.setString(2, supir.getNoHp());
             ps.setString(3, supir.getNoKendaraan());
+            
+            if (supir.getIdGudang() != null) {
+                ps.setInt(4, supir.getIdGudang());
+            } else {
+                ps.setNull(4, java.sql.Types.INTEGER);
+            }
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows == 0) {

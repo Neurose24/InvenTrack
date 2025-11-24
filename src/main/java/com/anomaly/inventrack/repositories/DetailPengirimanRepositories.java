@@ -45,7 +45,11 @@ public class DetailPengirimanRepositories {
             ps.setInt(2, detailPengiriman.getIdBarang());
             ps.setInt(3, detailPengiriman.getJumlahDikirim());
             ps.setInt(4, detailPengiriman.getJumlahDiterima());
-            ps.setObject(5, detailPengiriman.getStatusPenerimaan());
+            String statusStr = detailPengiriman.getStatusPenerimaan().name(); 
+            if (statusStr.equals("BELUM_DITERIMA")) {
+                statusStr = "BELUM DITERIMA"; 
+            }
+            ps.setString(5, statusStr);
             ps.setString(6, detailPengiriman.getCatatanPenerimaan());
 
             ps.executeUpdate();

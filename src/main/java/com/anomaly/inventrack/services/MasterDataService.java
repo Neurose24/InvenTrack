@@ -91,10 +91,12 @@ public class MasterDataService {
         if (supir.getNamaSupir() == null || supir.getNamaSupir().trim().isEmpty()) {
             throw new IllegalArgumentException("Nama Supir wajib diisi.");
         }
-
+        
+        if (supir.getIdGudang() == null) {
+             throw new IllegalArgumentException("Supir harus terdaftar di gudang tertentu.");
+        }
 
         supirRepo.saveSupir(supir); 
-
         return supir;
     }
 

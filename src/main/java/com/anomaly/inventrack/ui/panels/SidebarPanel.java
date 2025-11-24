@@ -256,6 +256,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnSubMenuBuatPermintaan.setBorderPainted(false);
         btnSubMenuBuatPermintaan.setContentAreaFilled(false);
         btnSubMenuBuatPermintaan.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuBuatPermintaan.addActionListener(this::btnSubMenuBuatPermintaanActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -297,6 +298,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         btnSubMenuDaftarPengiriman.setContentAreaFilled(false);
         btnSubMenuDaftarPengiriman.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         btnSubMenuDaftarPengiriman.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuDaftarPengiriman.addActionListener(this::btnSubMenuDaftarPengirimanActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
@@ -375,6 +377,18 @@ public class SidebarPanel extends javax.swing.JPanel {
     private void btnMenuPengirimanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMenuPengirimanActionPerformed
         toggleSubmenu(pnlSubMenuPengiriman);
     }//GEN-LAST:event_btnMenuPengirimanActionPerformed
+
+    private void btnSubMenuBuatPermintaanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuBuatPermintaanActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardBuatPermintaan");
+        }
+    }//GEN-LAST:event_btnSubMenuBuatPermintaanActionPerformed
+
+    private void btnSubMenuDaftarPengirimanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuDaftarPengirimanActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardDaftarPengiriman");
+        }
+    }//GEN-LAST:event_btnSubMenuDaftarPengirimanActionPerformed
 
     
 

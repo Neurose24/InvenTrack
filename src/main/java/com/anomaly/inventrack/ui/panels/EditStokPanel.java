@@ -107,6 +107,8 @@ public class EditStokPanel extends javax.swing.JPanel {
         colId.setPreferredWidth(60);
         
         tblBarang.getColumnModel().getColumn(2).setPreferredWidth(250);
+        
+        tblBarang.setFillsViewportHeight(true);
     }
     
     private void cekPilihanCheckbox() {
@@ -204,6 +206,7 @@ public class EditStokPanel extends javax.swing.JPanel {
         
         // Reset tombol edit
         btnEditStok.setVisible(false);
+        aturTinggiTabel();
     }
     
     private void loadDataPendukung() {
@@ -249,6 +252,35 @@ public class EditStokPanel extends javax.swing.JPanel {
         
         for (String s : satuanUnik) {
             cmbSatuan.addItem(s);
+        }
+    }
+    
+    private void aturTinggiTabel() {
+        int tinggiHeader = tblBarang.getTableHeader().getPreferredSize().height;
+        int tinggiBaris = tblBarang.getRowHeight();
+        int jumlahBaris = tblBarang.getRowCount();
+        
+        int totalTinggi = tinggiHeader + (tinggiBaris * jumlahBaris);
+
+        int minTinggi = 100;
+        int maxTinggi = 500;
+        
+        if (totalTinggi < minTinggi) totalTinggi = minTinggi;
+        if (totalTinggi > maxTinggi) totalTinggi = maxTinggi;
+        
+        // 3. Terapkan ke Tabel (Viewport)
+        java.awt.Dimension dim = new java.awt.Dimension(
+            tblBarang.getPreferredSize().width,
+            totalTinggi
+        );
+        
+        tblBarang.setPreferredScrollableViewportSize(dim);
+        
+        tblBarang.revalidate();
+        tblBarang.repaint();
+        
+        if (tblBarang.getParent() != null && tblBarang.getParent().getParent() instanceof javax.swing.JScrollPane) {
+            ((javax.swing.JScrollPane)tblBarang.getParent().getParent()).revalidate();
         }
     }
 

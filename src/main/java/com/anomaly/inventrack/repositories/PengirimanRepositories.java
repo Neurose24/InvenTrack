@@ -29,8 +29,8 @@ public class PengirimanRepositories {
                         rs.getInt("id_supir"),
                         rs.getTimestamp("tanggal_pengiriman").toLocalDateTime(),
                         rs.getString("no_kendaraan"),
-                        rs.getObject("status_pengriman", Pengiriman.StatusPengiriman.class),
-                        rs.getString("keterangan_pengriman")
+                        rs.getObject("status_pengiriman", Pengiriman.StatusPengiriman.class),
+                        rs.getString("keterangan_pengiriman")
                 );
                 list.add(p);
             }
@@ -57,8 +57,8 @@ public class PengirimanRepositories {
                         rs.getInt("id_supir"),
                         rs.getTimestamp("tanggal_pengiriman").toLocalDateTime(),
                         rs.getString("no_kendaraan"),
-                        rs.getObject("status_pengriman", Pengiriman.StatusPengiriman.class),
-                        rs.getString("keterangan_pengriman")
+                        rs.getObject("status_pengiriman", Pengiriman.StatusPengiriman.class),
+                        rs.getString("keterangan_pengiriman")
                     ));
                 }
             }
@@ -70,7 +70,7 @@ public class PengirimanRepositories {
 
     public void insert(Connection conn, Pengiriman pengiriman) throws SQLException {
         String sql = "INSERT INTO pengiriman (id_permintaan, id_pengguna_pengirim, id_pengguna_penerima, id_supir, " +
-                     "tanggal_pengiriman, no_kendaraan, status_pengriman, keterangan_pengriman) " +
+                     "tanggal_pengiriman, no_kendaraan, status_pengiriman, keterangan_pengiriman) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setObject(1, pengiriman.getIdPermintaan()); 
@@ -79,7 +79,7 @@ public class PengirimanRepositories {
             ps.setInt(4, pengiriman.getIdSupir());
             ps.setTimestamp(5, Timestamp.valueOf(pengiriman.getTanggalPengiriman()));
             ps.setString(6, pengiriman.getNoKendaraan());
-            ps.setObject(7, pengiriman.getStatusPengiriman());
+            ps.setObject(7, pengiriman.getStatusPengiriman().name());
             ps.setString(8, pengiriman.getKeteranganPengiriman());
             ps.executeUpdate();
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -91,7 +91,7 @@ public class PengirimanRepositories {
     }
 
     public void updateStatus(Connection conn, int id_pengiriman, Pengiriman.StatusPengiriman status) throws SQLException {
-    String sql = "UPDATE pengiriman SET status_pengriman = ? WHERE id_pengiriman = ?";
+    String sql = "UPDATE pengiriman SET status_pengiriman = ? WHERE id_pengiriman = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setObject(1, status.toString());
             ps.setInt(2, id_pengiriman);

@@ -20,6 +20,8 @@ public class DashboardPanel extends javax.swing.JPanel {
     private DaftarPermintaanPanel pDaftarPermintaan;
     private TambahBarangPanel pTambahBarang;
     private EditStokPanel pEditStok;
+    private BuatPermintaanPanel pBuatPermintaan;
+    private DaftarPengirimanPanel pDaftarPengiriman;
 
     /**
      * Creates new form DashboardPanel
@@ -40,12 +42,16 @@ public class DashboardPanel extends javax.swing.JPanel {
         pDaftarPermintaan = new DaftarPermintaanPanel();
         pTambahBarang = new TambahBarangPanel();
         pEditStok = new EditStokPanel();
+        pBuatPermintaan = new BuatPermintaanPanel();
+        pDaftarPengiriman = new DaftarPengirimanPanel();
 
         // Tambahkan ke CardLayout
         add(pStok, "cardStok");
         add(pDaftarPermintaan, "cardDaftarPermintaan");
         add(pTambahBarang, "cardTambahBarang");
         add(pEditStok, "cardEditStok");
+        add(pBuatPermintaan, "cardBuatPermintaan");
+        add(pDaftarPengiriman, "cardDaftarPengiriman");
     }
     
     public void setLoggedInUser(Pengguna user) {
@@ -55,7 +61,21 @@ public class DashboardPanel extends javax.swing.JPanel {
         }
         
         // Jika ada panel lain yang butuh user, kirim juga di sini
-        // if (pTambahBarang != null) pTambahBarang.setUser(user);
+        // if (pTambahBarang != null) {
+            // pTambahBarang.setCurrentUser(user);
+        // }
+        
+        if (pDaftarPermintaan != null) {
+            pDaftarPermintaan.setCurrentUser(user);
+        }
+        
+        if (pBuatPermintaan != null) {
+            pBuatPermintaan.setCurrentUser(user);
+        } 
+        
+        if (pDaftarPengiriman != null) {
+            pDaftarPengiriman.setCurrentUser(user);
+        }
     }
     
     public void refreshDataTambahBarang() {
