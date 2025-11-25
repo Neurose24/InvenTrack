@@ -85,7 +85,6 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
         }
         
         btnSimpan.setText("Kirim Barang");
-        btnCetakSuratJalan.setEnabled(false); // Baru nyala setelah disimpan
     }
     
     private void loadData() {
@@ -197,8 +196,7 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
                 conn.commit();
                 
                 JOptionPane.showMessageDialog(this, "Pengiriman berhasil dibuat! ID Pengiriman: " + idPengirimanBaru);
-                btnCetakSuratJalan.setEnabled(true);
-                btnSimpan.setEnabled(false);
+                dispose();
                 
             } catch (Exception e) {
                 conn.rollback();
@@ -260,7 +258,6 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
         btnBatal = new javax.swing.JButton();
         lblJudulIdPermintaan = new javax.swing.JLabel();
         lblIdPermintaan = new javax.swing.JLabel();
-        btnCetakSuratJalan = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -315,8 +312,6 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
 
         lblIdPermintaan.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
 
-        btnCetakSuratJalan.setText("Cetak Surat Jalan");
-
         javax.swing.GroupLayout pnlLogStokLayout = new javax.swing.GroupLayout(pnlLogStok);
         pnlLogStok.setLayout(pnlLogStokLayout);
         pnlLogStokLayout.setHorizontalGroup(
@@ -337,14 +332,12 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
                             .addComponent(cmbSupir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(pnlLogStokLayout.createSequentialGroup()
                         .addGap(120, 120, 120)
-                        .addGroup(pnlLogStokLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnCetakSuratJalan, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(pnlLogStokLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(btnTolakPermintaan, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(pnlLogStokLayout.createSequentialGroup()
-                                    .addComponent(btnSimpan, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(btnBatal, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                        .addGroup(pnlLogStokLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnTolakPermintaan, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnlLogStokLayout.createSequentialGroup()
+                                .addComponent(btnSimpan, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnBatal, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         pnlLogStokLayout.setVerticalGroup(
@@ -373,9 +366,7 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
                     .addComponent(btnSimpan))
                 .addGap(18, 18, 18)
                 .addComponent(btnTolakPermintaan)
-                .addGap(18, 18, 18)
-                .addComponent(btnCetakSuratJalan)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
 
         jPanel2.add(pnlLogStok);
@@ -399,7 +390,6 @@ public class FormProsesPermintaan extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBatal;
-    private javax.swing.JButton btnCetakSuratJalan;
     private javax.swing.JButton btnSimpan;
     private javax.swing.JButton btnTolakPermintaan;
     private javax.swing.JComboBox<Object> cmbSupir;

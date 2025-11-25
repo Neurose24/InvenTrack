@@ -1,0 +1,311 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ */
+package com.anomaly.inventrack.ui.panels;
+
+import com.anomaly.inventrack.models.Gudang;
+import com.anomaly.inventrack.models.Supir;
+import com.anomaly.inventrack.repositories.GudangRepositories;
+import com.anomaly.inventrack.repositories.SupirRepositories;
+import java.util.Optional;
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author user
+ */
+public class FormEditSupir extends javax.swing.JDialog {
+    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FormEditSupir.class.getName());
+    
+    private final SupirRepositories supirRepo = new SupirRepositories();
+    private final GudangRepositories gudangRepo = new GudangRepositories();
+    
+    private boolean isEditMode = false;
+    private int idSupirToEdit = -1;
+    
+    /**
+     * Creates new form FormTambahSupir
+     */
+    public FormEditSupir(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+        initComponents();
+        this.isEditMode = false;
+        setupUI();
+    }
+    
+    public FormEditSupir(java.awt.Frame parent, boolean modal, int idSupir) {
+        super(parent, modal);
+        initComponents();
+        this.isEditMode = true;
+        this.idSupirToEdit = idSupir;
+        setupUI();
+        loadDataEdit();
+    }
+    
+    private void setupUI() {
+        setTitle(isEditMode ? "Edit Supir" : "Tambah Supir Baru");
+        setLocationRelativeTo(null);
+        
+        cmbGudang.removeAllItems();
+        cmbGudang.addItem(new ComboItem("- Pilih Gudang -", -1));
+        
+        for (Gudang g : gudangRepo.findAll()) {
+            cmbGudang.addItem(new ComboItem(g.getNamaGudang(), g.getIdGudang()));
+        }
+    }
+    
+    private void loadDataEdit() {
+        Optional<Supir> optSupir = supirRepo.findById(idSupirToEdit);
+        
+        if (optSupir.isPresent()) {
+            Supir s = optSupir.get();
+            txtNamaSupir.setText(s.getNamaSupir());
+            txtNoHp.setText(s.getNoHp());
+            txtNoKendaraan.setText(s.getNoKendaraan());
+            
+            if (s.getIdGudang() != null) {
+                for (int i = 0; i < cmbGudang.getItemCount(); i++) {
+                    Object item = cmbGudang.getItemAt(i);
+                    if (item instanceof ComboItem) {
+                        ComboItem ci = (ComboItem) item;
+                        if (s.getIdGudang().equals(ci.getValue())) {
+                            cmbGudang.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Data supir tidak ditemukan!");
+            dispose();
+        }
+    }
+    
+    private void prosesSimpan() {
+        String nama = txtNamaSupir.getText().trim();
+        String hp = txtNoHp.getText().trim();
+        String nopol = txtNoKendaraan.getText().trim();
+        
+        ComboItem itemGudang = (ComboItem) cmbGudang.getSelectedItem();
+        Integer idGudang = (itemGudang != null && itemGudang.getValue() != -1) ? itemGudang.getValue() : null;
+        
+        if (nama.isEmpty() || hp.isEmpty() || nopol.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Semua field wajib diisi!", "Validasi", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        if (idGudang == null) {
+            JOptionPane.showMessageDialog(this, "Wajib memilih Gudang!", "Validasi", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            Supir supir = new Supir();
+            supir.setNamaSupir(nama);
+            supir.setNoHp(hp);
+            supir.setNoKendaraan(nopol);
+            supir.setIdGudang(idGudang);
+            
+            if (isEditMode) {
+                supir.setIdSupir(idSupirToEdit);
+                JOptionPane.showMessageDialog(this, "Fitur Update belum ada di Repo, tapi data valid."); 
+            } else {
+                supirRepo.saveSupir(supir);
+                JOptionPane.showMessageDialog(this, "Supir berhasil ditambahkan!");
+            }
+            
+            dispose();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan: " + e.getMessage());
+        }
+    }
+    
+    class ComboItem {
+        private String key; private int value;
+        public ComboItem(String k, int v) { key=k; value=v; }
+        public int getValue() { return value; }
+        @Override public String toString() { return key; }
+    }
+    
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        pnlWrapper = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        lblNamaSupir = new javax.swing.JLabel();
+        lblNoHp = new javax.swing.JLabel();
+        lblNoKendaraan = new javax.swing.JLabel();
+        lblGudang = new javax.swing.JLabel();
+        txtNamaSupir = new javax.swing.JTextField();
+        txtNoHp = new javax.swing.JTextField();
+        txtNoKendaraan = new javax.swing.JTextField();
+        btnSimpan = new javax.swing.JButton();
+        cmbGudang = new javax.swing.JComboBox<>();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
+
+        pnlWrapper.setLayout(new java.awt.GridBagLayout());
+
+        lblNamaSupir.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        lblNamaSupir.setText("Nama Supir");
+
+        lblNoHp.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        lblNoHp.setText("No HP");
+
+        lblNoKendaraan.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        lblNoKendaraan.setText("No Kendaraan");
+
+        lblGudang.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        lblGudang.setText("Gudang");
+
+        txtNamaSupir.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+
+        txtNoHp.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+
+        txtNoKendaraan.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+
+        btnSimpan.setText("Simpan");
+        btnSimpan.addActionListener(this::btnSimpanActionPerformed);
+
+        cmbGudang.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        cmbGudang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblNamaSupir, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6)
+                        .addComponent(txtNamaSupir, javax.swing.GroupLayout.PREFERRED_SIZE, 560, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblNoHp, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6)
+                        .addComponent(txtNoHp, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblNoKendaraan, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6)
+                        .addComponent(txtNoKendaraan, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(lblGudang, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnSimpan)
+                            .addComponent(cmbGudang, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblNamaSupir, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(txtNamaSupir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(6, 6, 6)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblNoHp, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(txtNoHp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(6, 6, 6)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblNoKendaraan, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(txtNoKendaraan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(8, 8, 8)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblGudang, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbGudang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(btnSimpan)
+                .addContainerGap(149, Short.MAX_VALUE))
+        );
+
+        pnlWrapper.add(jPanel2, new java.awt.GridBagConstraints());
+
+        jScrollPane2.setViewportView(pnlWrapper);
+
+        jPanel1.add(jScrollPane2);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        prosesSimpan();
+    }//GEN-LAST:event_btnSimpanActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                FormEditSupir dialog = new FormEditSupir(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnSimpan;
+    private javax.swing.JComboBox<Object> cmbGudang;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblGudang;
+    private javax.swing.JLabel lblNamaSupir;
+    private javax.swing.JLabel lblNoHp;
+    private javax.swing.JLabel lblNoKendaraan;
+    private javax.swing.JPanel pnlWrapper;
+    private javax.swing.JTextField txtNamaSupir;
+    private javax.swing.JTextField txtNoHp;
+    private javax.swing.JTextField txtNoKendaraan;
+    // End of variables declaration//GEN-END:variables
+}

@@ -57,6 +57,7 @@ public class SidebarPanel extends javax.swing.JPanel {
         if (pnlSubMenuBarang != null) pnlSubMenuBarang.setVisible(false);
         if (pnlSubMenuPermintaan != null) pnlSubMenuPermintaan.setVisible(false);
         if (pnlSubMenuPengiriman != null) pnlSubMenuPengiriman.setVisible(false);
+        if (pnlSubMenuAdminSupir != null) pnlSubMenuAdminSupir.setVisible(false);
  
         this.revalidate();
         this.repaint();
@@ -65,7 +66,6 @@ public class SidebarPanel extends javax.swing.JPanel {
     private void toggleSubmenu(JPanel subPanel) {
         boolean isVisible = subPanel.isVisible();
 
-        // 1. Ubah status visibilitas
         subPanel.setVisible(!isVisible);
 
         this.revalidate(); 
@@ -106,6 +106,9 @@ public class SidebarPanel extends javax.swing.JPanel {
         pnlSubMenuPengiriman = new javax.swing.JPanel();
         btnSubMenuDaftarPengiriman = new javax.swing.JButton();
         btnSubMenuBuatPengiriman = new javax.swing.JButton();
+        btnMenuAdminSupir = new javax.swing.JButton();
+        pnlSubMenuAdminSupir = new javax.swing.JPanel();
+        btnSubMenuBuatSupir = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
@@ -346,6 +349,47 @@ public class SidebarPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         pnlMenuContainer.add(pnlSubMenuPengiriman, gridBagConstraints);
 
+        btnMenuAdminSupir.setBackground(new java.awt.Color(170, 204, 213));
+        btnMenuAdminSupir.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnMenuAdminSupir.setText("Edit User");
+        btnMenuAdminSupir.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnMenuAdminSupir.setContentAreaFilled(false);
+        btnMenuAdminSupir.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnMenuAdminSupir.addActionListener(this::btnMenuAdminSupirActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
+        pnlMenuContainer.add(btnMenuAdminSupir, gridBagConstraints);
+
+        pnlSubMenuAdminSupir.setBackground(new java.awt.Color(170, 204, 213));
+        pnlSubMenuAdminSupir.setLayout(new java.awt.GridBagLayout());
+
+        btnSubMenuBuatSupir.setBackground(new java.awt.Color(170, 204, 213));
+        btnSubMenuBuatSupir.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        btnSubMenuBuatSupir.setText("Supir");
+        btnSubMenuBuatSupir.setBorder(null);
+        btnSubMenuBuatSupir.setBorderPainted(false);
+        btnSubMenuBuatSupir.setContentAreaFilled(false);
+        btnSubMenuBuatSupir.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        btnSubMenuBuatSupir.addActionListener(this::btnSubMenuBuatSupirActionPerformed);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        pnlSubMenuAdminSupir.add(btnSubMenuBuatSupir, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        pnlMenuContainer.add(pnlSubMenuAdminSupir, gridBagConstraints);
+
         jPanel1.setBackground(new java.awt.Color(170, 204, 213));
         jPanel1.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -421,14 +465,26 @@ public class SidebarPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnSubMenuBuatPengirimanActionPerformed
 
+    private void btnSubMenuBuatSupirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubMenuBuatSupirActionPerformed
+        if (panelUtama != null) {
+            panelUtama.showForm("cardSupir");
+        }
+    }//GEN-LAST:event_btnSubMenuBuatSupirActionPerformed
+
+    private void btnMenuAdminSupirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMenuAdminSupirActionPerformed
+        toggleSubmenu(pnlSubMenuAdminSupir);
+    }//GEN-LAST:event_btnMenuAdminSupirActionPerformed
+
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMenuAdminSupir;
     private javax.swing.JButton btnMenuBarang;
     private javax.swing.JButton btnMenuPengiriman;
     private javax.swing.JButton btnMenuPermintaan;
     private javax.swing.JButton btnSubMenuBuatPengiriman;
     private javax.swing.JButton btnSubMenuBuatPermintaan;
+    private javax.swing.JButton btnSubMenuBuatSupir;
     private javax.swing.JButton btnSubMenuDaftarPengiriman;
     private javax.swing.JButton btnSubMenuEditStok;
     private javax.swing.JButton btnSubMenuLogStok;
@@ -442,6 +498,7 @@ public class SidebarPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblUsername;
     private javax.swing.JPanel pnlMenuContainer;
     private javax.swing.JPanel pnlProfile;
+    private javax.swing.JPanel pnlSubMenuAdminSupir;
     private javax.swing.JPanel pnlSubMenuBarang;
     private javax.swing.JPanel pnlSubMenuPengiriman;
     private javax.swing.JPanel pnlSubMenuPermintaan;

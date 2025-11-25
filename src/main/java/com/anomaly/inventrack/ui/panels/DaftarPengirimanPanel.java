@@ -63,7 +63,7 @@ public class DaftarPengirimanPanel extends javax.swing.JPanel {
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentShown(java.awt.event.ComponentEvent e) {
-                loadDataPendukung();
+                loadDataPendukung(); 
                 loadDataPengiriman();
             }
         });

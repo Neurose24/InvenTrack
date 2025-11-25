@@ -24,6 +24,7 @@ public class DashboardPanel extends javax.swing.JPanel {
     private DaftarPengirimanPanel pDaftarPengiriman;
     private LogStokPanel pLogStok;
     private BuatPengirimanPanel pBuatPengiriman;
+    private SupirPanel pSupir;
 
     /**
      * Creates new form DashboardPanel
@@ -41,6 +42,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         pDaftarPengiriman = new DaftarPengirimanPanel();
         pLogStok = new LogStokPanel();
         pBuatPengiriman = new BuatPengirimanPanel();
+        pSupir = new SupirPanel();
 
         add(pStok, "cardStok");
         add(pDaftarPermintaan, "cardDaftarPermintaan");
@@ -50,6 +52,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         add(pDaftarPengiriman, "cardDaftarPengiriman");
         add(pLogStok, "cardLogStok");
         add(pBuatPengiriman, "cardBuatPengiriman");
+        add(pSupir, "cardSupir");
     }
     
     public void setLoggedInUser(Pengguna user) {
@@ -76,6 +79,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         if (pBuatPengiriman != null) {
             pBuatPengiriman.setCurrentUser(user);
         }
+        
     }
     
     public void refreshDataTambahBarang() {

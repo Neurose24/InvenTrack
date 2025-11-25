@@ -108,4 +108,23 @@ public class SupirRepositories {
             return false;
         }
     }
+
+    public void update(Supir supir) throws java.sql.SQLException {
+        String sql = "UPDATE supir SET nama_supir = ?, no_hp = ?, no_kendaraan = ?, id_gudang = ? WHERE id_supir = ?";
+        
+        try (java.sql.Connection conn = Database.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, supir.getNamaSupir());
+            ps.setString(2, supir.getNoHp());
+            ps.setString(3, supir.getNoKendaraan());
+            
+            if (supir.getIdGudang() != null) ps.setInt(4, supir.getIdGudang());
+            else ps.setNull(4, java.sql.Types.INTEGER);
+            
+            ps.setInt(5, supir.getIdSupir());
+            
+            ps.executeUpdate();
+        }
+    }
 }

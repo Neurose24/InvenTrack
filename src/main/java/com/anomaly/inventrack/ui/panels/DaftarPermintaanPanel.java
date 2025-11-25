@@ -56,6 +56,13 @@ public class DaftarPermintaanPanel extends javax.swing.JPanel {
         
         setupUI();
         setupListeners();
+        
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                loadData(); 
+            }
+        });
     }
     
     public void setCurrentUser(Pengguna user) {

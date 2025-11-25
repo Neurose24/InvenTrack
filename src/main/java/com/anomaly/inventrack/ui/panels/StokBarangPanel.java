@@ -65,11 +65,16 @@ public class StokBarangPanel extends javax.swing.JPanel {
             }
         });
         setupTable();
-        loadDataPendukung(); // Load data Barang & Gudang ke Memori
-        loadComboGudang();   // Isi ComboBox
-        loadComboKategori();
-        loadComboSatuan();
-        loadDataStok();
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                loadDataPendukung(); 
+                loadComboGudang();   
+                loadComboKategori();
+                loadComboSatuan();
+                loadDataStok();      
+            }
+        });
     }
     
     private void setupTable() {
